@@ -2436,29 +2436,25 @@ const BookCricket = () => {
                                     <div className="bg-gradient-to-r from-purple-100 to-pink-100 rounded-2xl p-4 mb-6 border-2 border-purple-300">
                                         <h4 className="font-bold text-purple-800 mb-3 text-center">🎁 Power-ups</h4>
                                         <div className="grid grid-cols-3 gap-2">
-                                            {Object.entries(enhancedPowerUps).map(([key, powerUp]) => {
-                                                const handlePowerUpClick = () => usePowerUp(key);
-
-                                                return (
-                                                    <button
-                                                        key={key}
-                                                        onClick={handlePowerUpClick}
-                                                        disabled={gameState.powerUps[key] <= 0 || gameState.activePowerUp || gameState.isGameOver}
-                                                        className={`p-2 rounded-lg text-center transition-all transform hover:scale-105 ${
-                                                            gameState.activePowerUp === key ? 'bg-yellow-300 text-yellow-800 animate-pulse border-2 border-yellow-500' :
-                                                                gameState.powerUps[key] > 0 ? 'bg-white text-purple-700 hover:bg-purple-50 shadow-md cursor-pointer border-2 border-purple-200' :
-                                                                    'bg-gray-200 text-gray-500 cursor-not-allowed opacity-50 border-2 border-gray-300'
-                                                        }`}
-                                                    >
-                                                        <div className="text-lg">{powerUp.icon}</div>
-                                                        <div className="text-xs font-bold">{gameState.powerUps[key] || 0}</div>
-                                                        {gameState.activePowerUp === key && <div className="text-xs text-yellow-700">ACTIVE</div>}
-                                                        {key === 'doubleRuns' && gameState.activePowerUp === 'doubleRuns' && (
-                                                            <div className="text-xs text-yellow-700">{gameState.doubleRunsRemaining || 3} left</div>
-                                                        )}
-                                                    </button>
-                                                );
-                                            })}
+                                            {Object.entries(enhancedPowerUps).map(([key, powerUp]) => (
+                                                <button
+                                                    key={key}
+                                                    onClick={() => usePowerUp(key)}
+                                                    disabled={gameState.powerUps[key] <= 0 || gameState.activePowerUp || gameState.isGameOver}
+                                                    className={`p-2 rounded-lg text-center transition-all transform hover:scale-105 ${
+                                                        gameState.activePowerUp === key ? 'bg-yellow-300 text-yellow-800 animate-pulse border-2 border-yellow-500' :
+                                                            gameState.powerUps[key] > 0 ? 'bg-white text-purple-700 hover:bg-purple-50 shadow-md cursor-pointer border-2 border-purple-200' :
+                                                                'bg-gray-200 text-gray-500 cursor-not-allowed opacity-50 border-2 border-gray-300'
+                                                    }`}
+                                                >
+                                                    <div className="text-lg">{powerUp.icon}</div>
+                                                    <div className="text-xs font-bold">{gameState.powerUps[key] || 0}</div>
+                                                    {gameState.activePowerUp === key && <div className="text-xs text-yellow-700">ACTIVE</div>}
+                                                    {key === 'doubleRuns' && gameState.activePowerUp === 'doubleRuns' && (
+                                                        <div className="text-xs text-yellow-700">{gameState.doubleRunsRemaining || 3} left</div>
+                                                    )}
+                                                </button>
+                                            ))}
                                         </div>
                                         {gameState.activePowerUp && (
                                             <div className="text-center mt-2 text-sm text-purple-700 font-bold">
