@@ -741,7 +741,7 @@ const BookCricket = () => {
     };
 
     // Power-up system
-    const usePowerUp = (powerUpType) => {
+    const activatePowerUp = (powerUpType) => {
         if (gameState.powerUps[powerUpType] <= 0 || gameState.isGameOver) return;
 
         setGameState(prev => ({
@@ -2439,7 +2439,7 @@ const BookCricket = () => {
                                             {Object.entries(enhancedPowerUps).map(([key, powerUp]) => (
                                                 <button
                                                     key={key}
-                                                    onClick={() => usePowerUp(key)}
+                                                    onClick={() => activatePowerUp(key)}
                                                     disabled={gameState.powerUps[key] <= 0 || gameState.activePowerUp || gameState.isGameOver}
                                                     className={`p-2 rounded-lg text-center transition-all transform hover:scale-105 ${
                                                         gameState.activePowerUp === key ? 'bg-yellow-300 text-yellow-800 animate-pulse border-2 border-yellow-500' :
