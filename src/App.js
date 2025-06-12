@@ -1,714 +1,1941 @@
-import React, { useState } from 'react';
-import { BookOpen, RotateCcw, Trophy, Target, Star, Medal, Settings, Volume2, VolumeX } from 'lucide-react';
-import * as Tone from 'tone';
+import React, { useState, useRef, useEffect } from 'react';
+import { BookOpen, RotateCcw, Trophy, Target, Star, Medal, Settings, Volume2, VolumeX, Zap, Crown, BarChart3, User, Calendar, Music, Play, Home, ArrowLeft, Clock, Users, Swords, TrendingUp, Share2, Timer, Gamepad2, Award, Flame, Shield } from 'lucide-react';
 
 const BookCricket = () => {
-  const [gameState, setGameState] = useState({
-    currentPage: 1,
-    totalPages: 500,
-    score: 0,
-    wickets: 0,
-    ballsFaced: 0,
-    isGameOver: false,
-    lastDigit: null,
-    runs: [],
-    gameMode: 'single',
-    targetScore: null,
-    playerName: 'Player 1',
-    difficulty: 'medium',
-    streak: 0,
-    maxStreak: 0
-  });
+    // App state management
+    const [currentScreen, setCurrentScreen] = useState('home'); // 'home', 'game', 'gameOver', 'tournament', 'multiplayer'
+    const [selectedDifficulty, setSelectedDifficulty] = useState('medium');
+    const [selectedMode, setSelectedMode] = useState('single');
+    const [targetScore, setTargetScore] = useState(null);
 
-  const [showRules, setShowRules] = useState(false);
-  const [showAchievements, setShowAchievements] = useState(false);
-  const [showSettings, setShowSettings] = useState(false);
-  const [gameHistory, setGameHistory] = useState([]);
-  const [celebration, setCelebration] = useState('');
-  const [achievements, setAchievements] = useState({
-    firstSix: false,
-    centurion: false,
-    ballOfFire: false,
-    survivor: false,
-    chasemaster: false,
-    streakking: false,
-    quickfire: false,
-    boundary: false,
-    legend: false,
-    nightmare: false
-  });
-  const [newAchievement, setNewAchievement] = useState('');
-  const [audioEnabled, setAudioEnabled] = useState(false);
-  const [backgroundMusicEnabled, setBgMusicEnabled] = useState(false);
-  const [audioInitialized, setAudioInitialized] = useState(false);
+    // Enhanced game state
+    const [gameState, setGameState] = useState({
+        currentPage: 1,
+        totalPages: 500,
+        score: 0,
+        wickets: 0,
+        ballsFaced: 0,
+        isGameOver: false,
+        lastDigit: null,
+        runs: [],
+        gameMode: 'single',
+        targetScore: null,
+        playerName: 'Player 1',
+        difficulty: 'medium',
+        streak: 0,
+        maxStreak: 0,
+        powerUps: {
+            luckyPage: 0,
+            doubleRuns: 0,
+            extraLife: 0
+        },
+        activePowerUp: null,
+        timeLimit: null,
+        startTime: null
+    });
 
-  // Audio setup
-  const [sounds, setSounds] = useState({});
-  const [backgroundMusic, setBackgroundMusic] = useState(null);
+    // New features state
+    const [tournamentData, setTournamentData] = useState({
+        currentRound: 0,
+        totalRounds: 0,
+        bracket: [],
+        isActive: false,
+        winner: null
+    });
 
-  // Difficulty settings
-  const difficulties = {
-    easy: {
-      name: 'Easy',
-      description: 'More runs, fewer outs',
-      outDigits: [0, 9],
-      bonusRuns: true,
-      color: 'green'
-    },
-    medium: {
-      name: 'Medium',
-      description: 'Classic book cricket',
-      outDigits: [0, 7, 8, 9],
-      bonusRuns: false,
-      color: 'blue'
-    },
-    hard: {
-      name: 'Hard',
-      description: 'High risk, high reward',
-      outDigits: [0, 6, 7, 8, 9],
-      bonusRuns: false,
-      color: 'red'
-    },
-    nightmare: {
-      name: 'Nightmare',
-      description: 'For the brave only',
-      outDigits: [0, 5, 6, 7, 8, 9],
-      bonusRuns: false,
-      color: 'purple'
-    }
-  };
+    const [multiplayerData, setMultiplayerData] = useState({
+        isActive: false,
+        currentPlayer: 1,
+        players: [
+            { name: 'Player 1', score: 0, wickets: 0, balls: 0, isOut: false },
+            { name: 'Player 2', score: 0, wickets: 0, balls: 0, isOut: false }
+        ],
+        gameComplete: false,
+        winner: null
+    });
 
-  // Achievement definitions
-  const achievementDefs = {
-    firstSix: { name: 'First Six!', desc: 'Hit your first six', icon: '🎯', color: 'green' },
-    centurion: { name: 'Centurion', desc: 'Score 100+ runs', icon: '💯', color: 'blue' },
-    ballOfFire: { name: 'Ball of Fire', desc: 'Hit 3 sixes in a row', icon: '🔥', color: 'orange' },
-    survivor: { name: 'Survivor', desc: 'Face 50+ balls without getting out', icon: '🛡️', color: 'purple' },
-    chasemaster: { name: 'Chase Master', desc: 'Successfully chase 3 targets', icon: '🎯', color: 'red' },
-    streakking: { name: 'Streak King', desc: 'Score runs in 10 consecutive balls', icon: '⚡', color: 'yellow' },
-    quickfire: { name: 'Quickfire', desc: 'Score 50 runs in under 20 balls', icon: '💨', color: 'cyan' },
-    boundary: { name: 'Boundary King', desc: 'Hit 10 fours in a game', icon: '🏏', color: 'indigo' },
-    legend: { name: 'Legend', desc: 'Score 200+ runs', icon: '👑', color: 'gold' },
-    nightmare: { name: 'Nightmare Survivor', desc: 'Score 25+ in nightmare mode', icon: '💀', color: 'black' }
-  };
+    const [dailyChallenge, setDailyChallenge] = useState({
+        active: true,
+        description: "Score 75+ runs in nightmare mode",
+        progress: 0,
+        target: 75,
+        reward: "🎯 Master Badge",
+        completed: false,
+        expiresIn: "18:45:22"
+    });
 
-  // Initialize audio system
-  const initializeAudio = async () => {
-    if (audioInitialized) return;
+    const [leaderboard, setLeaderboard] = useState([
+        { name: 'Cricket Legend', score: 287, difficulty: 'nightmare', date: '2024-03-15' },
+        { name: 'Boundary King', score: 245, difficulty: 'hard', date: '2024-03-14' },
+        { name: 'Six Master', score: 198, difficulty: 'medium', date: '2024-03-13' },
+        { name: 'The Wall', score: 156, difficulty: 'hard', date: '2024-03-12' },
+        { name: 'Quick Fire', score: 134, difficulty: 'medium', date: '2024-03-11' }
+    ]);
 
-    try {
-      await Tone.start();
+    // Existing state
+    const [showRules, setShowRules] = useState(false);
+    const [showAchievements, setShowAchievements] = useState(false);
+    const [showSettings, setShowSettings] = useState(false);
+    const [showStats, setShowStats] = useState(false);
+    const [showProfile, setShowProfile] = useState(false);
+    const [showLeaderboard, setShowLeaderboard] = useState(false);
+    const [gameHistory, setGameHistory] = useState([]);
+    const [celebration, setCelebration] = useState('');
 
-      // Create cricket sounds using Tone.js
-      const batSound = new Tone.Player().toDestination();
-      const crowdCheer = new Tone.Noise("white").toDestination();
-      const crowdOoh = new Tone.Noise("pink").toDestination();
-      const boundarySound = new Tone.Oscillator(440, "sine").toDestination();
-      const sixSound = new Tone.Oscillator(880, "square").toDestination();
-      const outSound = new Tone.Noise("brown").toDestination();
+    const [achievements, setAchievements] = useState({
+        firstSix: false, centurion: false, ballOfFire: false, survivor: false,
+        chasemaster: false, streakking: false, quickfire: false, boundary: false,
+        legend: false, nightmare: false, perfectGame: false, doublecentury: false,
+        // New achievements
+        speedster: false, multiWin: false, tournamentChamp: false, socialShare: false
+    });
 
-      // Create background music loop
-      const bgMusic = new Tone.Loop((time) => {
-        const notes = ["C4", "E4", "G4", "C5", "G4", "E4"];
-        const note = notes[Math.floor(Math.random() * notes.length)];
-        const synth = new Tone.Synth().toDestination();
-        synth.triggerAttackRelease(note, "8n", time);
-      }, "2n");
+    const [newAchievement, setNewAchievement] = useState('');
+    const [audioEnabled, setAudioEnabled] = useState(false);
+    const [backgroundMusicEnabled, setBgMusicEnabled] = useState(false);
+    const [isAnimating, setIsAnimating] = useState(false);
 
-      setSounds({
-        batSound,
-        crowdCheer,
-        crowdOoh,
-        boundarySound,
-        sixSound,
-        outSound
-      });
+    // Enhanced user stats
+    const [userStats, setUserStats] = useState({
+        totalRuns: 0, totalMatches: 0, totalWickets: 0, totalBalls: 0,
+        totalSixes: 0, totalFours: 0, highestScore: 0, longestStreak: 0,
+        averageScore: 0, strikeRate: 0, matchesWon: 0, achievementsUnlocked: 0,
+        timePlayedMinutes: 0, favoriteDigit: null, lastPlayedDate: null,
+        weeklyGoal: 500, weeklyProgress: 0,
+        // New stats
+        fastestFifty: null, tournamentWins: 0, multiplayerWins: 0,
+        challengesCompleted: 0, powerUpsUsed: 0, perfectGames: 0
+    });
 
-      setBackgroundMusic(bgMusic);
-      setAudioInitialized(true);
-    } catch (error) {
-      console.log("Audio initialization failed:", error);
-    }
-  };
+    const [persistentMusicEnabled, setPersistentMusicEnabled] = useState(false);
+    const persistentMusicRef = useRef(null);
+    const persistentGainRef = useRef(null);
 
-  // Play sound effects
-  const playSound = (soundType, runs = 0, isOut = false) => {
-    if (!audioEnabled || !audioInitialized) return;
+    // Audio refs
+    const audioContextRef = useRef(null);
+    const gainNodeRef = useRef(null);
+    const bgMusicOscillatorRef = useRef(null);
+    const bgMusicGainRef = useRef(null);
+    const bgMusicIntervalRef = useRef(null);
 
-    try {
-      if (isOut) {
-        sounds.outSound?.start();
-        sounds.outSound?.stop("+0.3");
-        sounds.crowdOoh?.start();
-        sounds.crowdOoh?.stop("+1");
-      } else if (runs === 6) {
-        sounds.sixSound?.start();
-        sounds.sixSound?.stop("+0.5");
-        sounds.crowdCheer?.start();
-        sounds.crowdCheer?.stop("+3");
-        setTimeout(() => {
-          if (sounds.boundarySound) {
-            sounds.boundarySound.frequency.setValueAtTime(660, Tone.now());
-            sounds.boundarySound.start();
-            sounds.boundarySound.stop("+0.3");
-          }
-        }, 500);
-      } else if (runs === 4) {
-        sounds.boundarySound?.start();
-        sounds.boundarySound?.stop("+0.4");
-        sounds.crowdCheer?.start();
-        sounds.crowdCheer?.stop("+2");
-      } else if (runs > 0) {
-        sounds.batSound?.start();
-        sounds.batSound?.stop("+0.2");
-        if (runs >= 2) {
-          sounds.crowdCheer?.start();
-          sounds.crowdCheer?.stop("+1");
+    // Enhanced difficulty settings
+    const difficulties = {
+        easy: {
+            name: 'Easy',
+            description: 'Only 0 & 9 are out',
+            outDigits: [0, 9],
+            scoreDigits: [1, 2, 3, 4, 6],
+            color: 'emerald',
+            icon: '🌱',
+            multiplier: 1,
+            powerUpChance: 0.15
+        },
+        medium: {
+            name: 'Medium',
+            description: 'Only 0 & 9 are out',
+            outDigits: [0, 9],
+            scoreDigits: [1, 2, 3, 4, 6],
+            color: 'blue',
+            icon: '⚡',
+            multiplier: 1.2,
+            powerUpChance: 0.10
+        },
+        hard: {
+            name: 'Hard',
+            description: '0, 5, 9 are out',
+            outDigits: [0, 5, 9],
+            scoreDigits: [1, 2, 3, 4, 6],
+            color: 'orange',
+            icon: '🔥',
+            multiplier: 1.5,
+            powerUpChance: 0.08
+        },
+        nightmare: {
+            name: 'Nightmare',
+            description: '0, 5, 7, 8, 9 are out',
+            outDigits: [0, 5, 7, 8, 9],
+            scoreDigits: [1, 2, 3, 4, 6],
+            color: 'red',
+            icon: '💀',
+            multiplier: 2,
+            powerUpChance: 0.05
         }
-      }
-    } catch (error) {
-      console.log("Sound playback failed:", error);
-    }
-  };
-
-  // Toggle background music
-  const toggleBackgroundMusic = () => {
-    if (!audioInitialized) return;
-
-    try {
-      if (backgroundMusicEnabled) {
-        backgroundMusic?.stop();
-        setBgMusicEnabled(false);
-      } else {
-        backgroundMusic?.start();
-        setBgMusicEnabled(true);
-      }
-    } catch (error) {
-      console.log("Background music toggle failed:", error);
-    }
-  };
-
-  // Enable audio
-  const enableAudio = async () => {
-    if (!audioInitialized) {
-      await initializeAudio();
-    }
-    setAudioEnabled(true);
-  };
-
-  // Get scoring rules based on difficulty
-  const getScoreFromDigit = (digit) => {
-    const diff = difficulties[gameState.difficulty];
-    const isOut = diff.outDigits.includes(digit);
-
-    if (isOut) {
-      return { runs: 0, isOut: true };
-    }
-
-    let runs = digit === 0 ? 0 : digit;
-
-    if (diff.bonusRuns && digit >= 4) {
-      runs += 1;
-    }
-
-    return { runs, isOut: false };
-  };
-
-  // Check achievements
-  const checkAchievements = (newState) => {
-    const newAchievements = { ...achievements };
-    let achievementUnlocked = false;
-
-    if (!achievements.firstSix && newState.runs.some(r => r.runs === 6)) {
-      newAchievements.firstSix = true;
-      achievementUnlocked = 'firstSix';
-    }
-
-    if (!achievements.centurion && newState.score >= 100) {
-      newAchievements.centurion = true;
-      achievementUnlocked = 'centurion';
-    }
-
-    if (!achievements.legend && newState.score >= 200) {
-      newAchievements.legend = true;
-      achievementUnlocked = 'legend';
-    }
-
-    if (!achievements.ballOfFire) {
-      const lastThree = newState.runs.slice(-3);
-      if (lastThree.length === 3 && lastThree.every(r => r.runs === 6)) {
-        newAchievements.ballOfFire = true;
-        achievementUnlocked = 'ballOfFire';
-      }
-    }
-
-    if (!achievements.survivor && newState.ballsFaced >= 50 && newState.wickets === 0) {
-      newAchievements.survivor = true;
-      achievementUnlocked = 'survivor';
-    }
-
-    if (!achievements.quickfire && newState.score >= 50 && newState.ballsFaced <= 20) {
-      newAchievements.quickfire = true;
-      achievementUnlocked = 'quickfire';
-    }
-
-    if (!achievements.boundary && newState.runs.filter(r => r.runs === 4).length >= 10) {
-      newAchievements.boundary = true;
-      achievementUnlocked = 'boundary';
-    }
-
-    if (!achievements.nightmare && newState.difficulty === 'nightmare' && newState.score >= 25) {
-      newAchievements.nightmare = true;
-      achievementUnlocked = 'nightmare';
-    }
-
-    if (achievementUnlocked) {
-      setAchievements(newAchievements);
-      setNewAchievement(achievementUnlocked);
-      setTimeout(() => setNewAchievement(''), 4000);
-    }
-  };
-
-  const turnPage = () => {
-    if (gameState.isGameOver) return;
-
-    const newPage = Math.floor(Math.random() * gameState.totalPages) + 1;
-    const lastDigit = newPage % 10;
-    const scoreResult = getScoreFromDigit(lastDigit);
-
-    const newScore = gameState.score + scoreResult.runs;
-    const newWickets = scoreResult.isOut ? gameState.wickets + 1 : gameState.wickets;
-    const newBalls = gameState.ballsFaced + 1;
-    const newStreak = scoreResult.runs > 0 ? gameState.streak + 1 : 0;
-    const newMaxStreak = Math.max(gameState.maxStreak, newStreak);
-
-    playSound('hit', scoreResult.runs, scoreResult.isOut);
-
-    const isGameOver = newWickets >= 10 ||
-        (gameState.gameMode === 'chase' && newScore > gameState.targetScore);
-
-    if (scoreResult.runs === 6) {
-      setCelebration('💥 SIX! BOOM! 💥');
-      setTimeout(() => setCelebration(''), 2500);
-    } else if (scoreResult.runs === 4) {
-      setCelebration('🏏 FOUR! Beautiful! 🏏');
-      setTimeout(() => setCelebration(''), 2000);
-    } else if (scoreResult.isOut) {
-      setCelebration('💀 OUT! Oh no! 💀');
-      setTimeout(() => setCelebration(''), 2000);
-    } else if (scoreResult.runs > 0 && newStreak >= 5) {
-      setCelebration('🔥 ON FIRE! 🔥');
-      setTimeout(() => setCelebration(''), 1500);
-    }
-
-    const newState = {
-      ...gameState,
-      currentPage: newPage,
-      lastDigit: lastDigit,
-      score: newScore,
-      wickets: newWickets,
-      ballsFaced: newBalls,
-      isGameOver: isGameOver,
-      streak: newStreak,
-      maxStreak: newMaxStreak,
-      runs: [...gameState.runs, { runs: scoreResult.runs, isOut: scoreResult.isOut, page: newPage }]
     };
 
-    setGameState(newState);
-    checkAchievements(newState);
+    // Enhanced game modes
+    const gameModes = {
+        single: {
+            name: 'Single Player',
+            description: 'Play until you get out',
+            icon: '🏏'
+        },
+        chase: {
+            name: 'Chase Target',
+            description: 'Set a target score to chase',
+            icon: '🎯'
+        },
+        timeAttack: {
+            name: 'Time Attack',
+            description: 'Score maximum in 2 minutes',
+            icon: '⏱️'
+        },
+        t5: {
+            name: 'T5 Cricket',
+            description: '5 overs (30 balls)',
+            icon: '⚡'
+        },
+        t10: {
+            name: 'T10 Cricket',
+            description: '10 overs (60 balls)',
+            icon: '🔥'
+        },
+        t20: {
+            name: 'T20 Cricket',
+            description: '20 overs (120 balls)',
+            icon: '🏆'
+        },
+        multiplayer: {
+            name: 'Local Multiplayer',
+            description: 'Turn-based with friends',
+            icon: '👥'
+        },
+        tournament: {
+            name: 'Tournament',
+            description: 'Bracket-style competition',
+            icon: '🏆'
+        }
+    };
 
-    if (isGameOver) {
-      setGameHistory(prev => [...prev, {
-        score: newScore,
-        wickets: newWickets,
-        balls: newBalls,
-        difficulty: gameState.difficulty,
-        date: new Date().toLocaleDateString()
-      }]);
+    // Enhanced achievement definitions
+    const achievementDefs = {
+        firstSix: { name: 'First Six!', desc: 'Hit your first six', icon: '🎯', color: 'emerald', points: 10 },
+        centurion: { name: 'Centurion', desc: 'Score 100+ runs', icon: '💯', color: 'blue', points: 50 },
+        ballOfFire: { name: 'Ball of Fire', desc: 'Hit 3 sixes in a row', icon: '🔥', color: 'orange', points: 75 },
+        survivor: { name: 'Survivor', desc: 'Face 50+ balls without getting out', icon: '🛡️', color: 'purple', points: 100 },
+        chasemaster: { name: 'Chase Master', desc: 'Successfully chase 3 targets', icon: '🎯', color: 'red', points: 80 },
+        streakking: { name: 'Streak King', desc: 'Score runs in 10 consecutive balls', icon: '⚡', color: 'yellow', points: 60 },
+        quickfire: { name: 'Quickfire', desc: 'Score 50 runs in under 20 balls', icon: '💨', color: 'cyan', points: 90 },
+        boundary: { name: 'Boundary King', desc: 'Hit 10 fours in a game', icon: '🏏', color: 'indigo', points: 70 },
+        legend: { name: 'Legend', desc: 'Score 200+ runs', icon: '👑', color: 'yellow', points: 150 },
+        nightmare: { name: 'Nightmare Survivor', desc: 'Score 25+ in nightmare mode', icon: '💀', color: 'gray', points: 200 },
+        perfectGame: { name: 'Perfect Game', desc: 'Score 50+ without getting out', icon: '✨', color: 'gold', points: 250 },
+        doublecentury: { name: 'Double Century', desc: 'Score 200+ runs in a single game', icon: '🏆', color: 'gold', points: 300 },
+        // New achievements
+        speedster: { name: 'Speedster', desc: 'Score 50+ in time attack mode', icon: '💨', color: 'cyan', points: 120 },
+        multiWin: { name: 'Multiplayer Master', desc: 'Win 5 multiplayer games', icon: '👥', color: 'purple', points: 150 },
+        tournamentChamp: { name: 'Tournament Champion', desc: 'Win a tournament', icon: '🏆', color: 'gold', points: 200 },
+        socialShare: { name: 'Social Star', desc: 'Share your first score', icon: '📱', color: 'pink', points: 25 }
+    };
+
+    // Power-up definitions
+    const powerUps = {
+        luckyPage: {
+            name: 'Lucky Page',
+            description: 'Next page guaranteed to be a scoring digit',
+            icon: '🍀',
+            cost: 50,
+            effect: 'Forces next digit to be 1-6'
+        },
+        doubleRuns: {
+            name: 'Double Runs',
+            description: 'Double your runs for next 3 balls',
+            icon: '💫',
+            cost: 75,
+            effect: 'Multiplies runs by 2 for 3 balls'
+        },
+        extraLife: {
+            name: 'Extra Life',
+            description: 'Survive one wicket',
+            icon: '❤️',
+            cost: 100,
+            effect: 'Prevents one out'
+        }
+    };
+
+    // Audio initialization (keeping existing audio code)
+    const initializeAudio = async () => {
+        try {
+            if (!audioContextRef.current) {
+                audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
+                gainNodeRef.current = audioContextRef.current.createGain();
+                gainNodeRef.current.connect(audioContextRef.current.destination);
+                gainNodeRef.current.gain.setValueAtTime(0.3, audioContextRef.current.currentTime);
+
+                bgMusicGainRef.current = audioContextRef.current.createGain();
+                bgMusicGainRef.current.connect(audioContextRef.current.destination);
+                bgMusicGainRef.current.gain.setValueAtTime(0.2, audioContextRef.current.currentTime);
+            }
+
+            if (audioContextRef.current.state === 'suspended') {
+                await audioContextRef.current.resume();
+            }
+        } catch (error) {
+            console.log('Audio initialization failed:', error);
+        }
+    };
+
+    const playSound = (type, runs = 0, isOut = false) => {
+        if (!audioEnabled || !audioContextRef.current) return;
+
+        const ctx = audioContextRef.current;
+        const now = ctx.currentTime;
+
+        if (isOut) {
+            // Wicket sound
+            const wicketOsc = ctx.createOscillator();
+            const wicketGain = ctx.createGain();
+            wicketOsc.connect(wicketGain).connect(gainNodeRef.current);
+
+            wicketOsc.type = 'triangle';
+            wicketOsc.frequency.setValueAtTime(350, now);
+            wicketOsc.frequency.exponentialRampToValueAtTime(200, now + 0.3);
+            wicketGain.gain.setValueAtTime(0.4, now);
+            wicketGain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+
+            wicketOsc.start(now);
+            wicketOsc.stop(now + 0.4);
+        } else if (runs === 6) {
+            // Six sound
+            const sixOsc = ctx.createOscillator();
+            const sixGain = ctx.createGain();
+            sixOsc.connect(sixGain).connect(gainNodeRef.current);
+
+            sixOsc.type = 'sine';
+            sixOsc.frequency.setValueAtTime(523, now);
+            sixOsc.frequency.exponentialRampToValueAtTime(440, now + 0.8);
+            sixGain.gain.setValueAtTime(0.5, now);
+            sixGain.gain.exponentialRampToValueAtTime(0.001, now + 1.2);
+
+            sixOsc.start(now);
+            sixOsc.stop(now + 1.2);
+        } else if (runs === 4) {
+            // Four sound
+            const fourOsc = ctx.createOscillator();
+            const fourGain = ctx.createGain();
+            fourOsc.connect(fourGain).connect(gainNodeRef.current);
+
+            fourOsc.type = 'triangle';
+            fourOsc.frequency.setValueAtTime(440, now);
+            fourOsc.frequency.linearRampToValueAtTime(330, now + 0.4);
+            fourGain.gain.setValueAtTime(0.4, now);
+            fourGain.gain.linearRampToValueAtTime(0.001, now + 0.5);
+
+            fourOsc.start(now);
+            fourOsc.stop(now + 0.5);
+        }
+    };
+
+    const enableAudio = async () => {
+        await initializeAudio();
+        setAudioEnabled(true);
+    };
+
+    // Enhanced scoring system
+    const getScoreFromDigit = (digit) => {
+        const diff = difficulties[gameState.difficulty];
+
+        if (diff.outDigits.includes(digit)) {
+            // Check for extra life power-up
+            if (gameState.activePowerUp === 'extraLife') {
+                setGameState(prev => ({ ...prev, activePowerUp: null }));
+                return { runs: 0, isOut: false, powerUpUsed: true };
+            }
+            return { runs: 0, isOut: true };
+        }
+
+        if (diff.scoreDigits.includes(digit)) {
+            let runs = digit;
+
+            // Apply double runs power-up
+            if (gameState.activePowerUp === 'doubleRuns') {
+                runs *= 2;
+            }
+
+            return { runs: runs, isOut: false };
+        }
+
+        return { runs: 0, isOut: false };
+    };
+
+    // Power-up system
+    const usePowerUp = (powerUpType) => {
+        if (gameState.powerUps[powerUpType] <= 0 || gameState.isGameOver) return;
+
+        setGameState(prev => ({
+            ...prev,
+            powerUps: {
+                ...prev.powerUps,
+                [powerUpType]: prev.powerUps[powerUpType] - 1
+            },
+            activePowerUp: powerUpType,
+            doubleRunsRemaining: powerUpType === 'doubleRuns' ? 3 : prev.doubleRunsRemaining
+        }));
+
+        setUserStats(prev => ({ ...prev, powerUpsUsed: prev.powerUpsUsed + 1 }));
+
+        // Show power-up activation message
+        setCelebration(`🎁 ${powerUps[powerUpType].name} ACTIVATED! 🎁`);
+        setTimeout(() => setCelebration(''), 2000);
+    };
+
+    // Enhanced turn page function
+    const turnPage = () => {
+        if (gameState.isGameOver || isAnimating) return;
+
+        setIsAnimating(true);
+
+        let newPage = Math.floor(Math.random() * gameState.totalPages) + 1;
+        let lastDigit = newPage % 10;
+
+        // Apply lucky page power-up
+        if (gameState.activePowerUp === 'luckyPage') {
+            const luckyDigits = [1, 2, 3, 4, 6];
+            lastDigit = luckyDigits[Math.floor(Math.random() * luckyDigits.length)];
+            newPage = Math.floor(newPage / 10) * 10 + lastDigit;
+            setGameState(prev => ({ ...prev, activePowerUp: null }));
+            setCelebration('🍀 LUCKY PAGE ACTIVATED! 🍀');
+            setTimeout(() => setCelebration(''), 2000);
+        }
+
+        const scoreResult = getScoreFromDigit(lastDigit);
+        const newScore = gameState.score + scoreResult.runs;
+        const newWickets = scoreResult.isOut ? gameState.wickets + 1 : gameState.wickets;
+        const newBalls = gameState.ballsFaced + 1;
+        const newStreak = scoreResult.runs > 0 ? gameState.streak + 1 : 0;
+        const newMaxStreak = Math.max(gameState.maxStreak, newStreak);
+
+        // Handle double runs power-up
+        let doubleRunsUsed = false;
+        if (gameState.activePowerUp === 'doubleRuns' && scoreResult.runs > 0) {
+            doubleRunsUsed = true;
+            // Reduce double runs counter
+            const newDoubleRuns = Math.max(0, (gameState.doubleRunsRemaining || 3) - 1);
+            setGameState(prev => ({
+                ...prev,
+                doubleRunsRemaining: newDoubleRuns,
+                activePowerUp: newDoubleRuns > 0 ? 'doubleRuns' : null
+            }));
+        }
+
+        playSound('hit', scoreResult.runs, scoreResult.isOut);
+
+        // Check game end conditions
+        let isGameOver = newWickets >= 10;
+
+        // Time attack mode
+        if (gameState.gameMode === 'timeAttack' && gameState.startTime) {
+            const timeElapsed = (Date.now() - gameState.startTime) / 1000;
+            if (timeElapsed >= 120) {
+                isGameOver = true;
+            }
+        }
+
+        // Over-based modes (T5, T10, T20)
+        if (['t5', 't10', 't20'].includes(gameState.gameMode)) {
+            const maxBalls = gameState.gameMode === 't5' ? 30 :
+                gameState.gameMode === 't10' ? 60 : 120;
+            if (newBalls >= maxBalls) {
+                isGameOver = true;
+            }
+        }
+
+        if (gameState.gameMode === 'chase' && newScore > gameState.targetScore) {
+            isGameOver = true;
+        }
+
+        // Generate power-ups based on difficulty
+        const newPowerUps = { ...gameState.powerUps };
+        if (Math.random() < difficulties[gameState.difficulty].powerUpChance && !isGameOver) {
+            const powerUpTypes = Object.keys(powerUps);
+            const randomPowerUp = powerUpTypes[Math.floor(Math.random() * powerUpTypes.length)];
+            newPowerUps[randomPowerUp] += 1;
+            setCelebration(`🎁 POWER-UP EARNED: ${powerUps[randomPowerUp].name}! 🎁`);
+            setTimeout(() => setCelebration(''), 2500);
+        } else if (!gameState.activePowerUp || gameState.activePowerUp === 'luckyPage') {
+            // Regular celebrations (only if no power-up celebration)
+            if (scoreResult.runs === 6) {
+                setCelebration('🚀 MASSIVE SIX! GONE FOR MILES! 🚀');
+                setTimeout(() => setCelebration(''), 3500);
+            } else if (scoreResult.runs === 4) {
+                setCelebration('⚡ CRACKING FOUR! BOUNDARY! ⚡');
+                setTimeout(() => setCelebration(''), 3000);
+            } else if (scoreResult.isOut) {
+                setCelebration(scoreResult.powerUpUsed ? '❤️ EXTRA LIFE SAVED YOU! ❤️' : '🏏 CLEAN BOWLED! WHAT A DELIVERY! 🏏');
+                setTimeout(() => setCelebration(''), 3000);
+            } else if (doubleRunsUsed) {
+                setCelebration(`💫 DOUBLE RUNS! ${scoreResult.runs} → ${scoreResult.runs * 2}! 💫`);
+                setTimeout(() => setCelebration(''), 2500);
+            }
+        }
+
+        const newState = {
+            ...gameState,
+            currentPage: newPage,
+            lastDigit: lastDigit,
+            score: newScore,
+            wickets: newWickets,
+            ballsFaced: newBalls,
+            isGameOver: isGameOver,
+            streak: newStreak,
+            maxStreak: newMaxStreak,
+            powerUps: newPowerUps,
+            runs: [...gameState.runs, { runs: scoreResult.runs, isOut: scoreResult.isOut, page: newPage, doubled: doubleRunsUsed }]
+        };
+
+        setGameState(newState);
+        checkAchievements(newState);
+        updateStats(newState);
+
+        if (isGameOver) {
+            handleGameEnd(newState);
+        }
+
+        setTimeout(() => setIsAnimating(false), 1000);
+    };
+
+    // Handle game end
+    const handleGameEnd = (finalState) => {
+        setGameHistory(prev => [...prev, {
+            score: finalState.score,
+            wickets: finalState.wickets,
+            balls: finalState.ballsFaced,
+            difficulty: finalState.difficulty,
+            mode: finalState.gameMode,
+            date: new Date().toLocaleDateString(),
+            timestamp: Date.now()
+        }]);
+
+        // Update leaderboard
+        if (finalState.score > 0) {
+            setLeaderboard(prev => {
+                const newEntry = {
+                    name: finalState.playerName,
+                    score: finalState.score,
+                    difficulty: finalState.difficulty,
+                    date: new Date().toLocaleDateString()
+                };
+                return [...prev, newEntry]
+                    .sort((a, b) => b.score - a.score)
+                    .slice(0, 10);
+            });
+        }
+
+        // Handle multiplayer
+        if (gameState.gameMode === 'multiplayer') {
+            handleMultiplayerEnd(finalState);
+        }
+
+        setTimeout(() => setCurrentScreen('gameOver'), 2000);
+    };
+
+    // Multiplayer functions
+    const handleMultiplayerEnd = (finalState) => {
+        const currentPlayerIndex = multiplayerData.currentPlayer - 1;
+        const updatedPlayers = [...multiplayerData.players];
+        updatedPlayers[currentPlayerIndex] = {
+            ...updatedPlayers[currentPlayerIndex],
+            score: finalState.score,
+            wickets: finalState.wickets,
+            balls: finalState.ballsFaced,
+            isOut: true
+        };
+
+        if (multiplayerData.currentPlayer < multiplayerData.players.length) {
+            // Next player's turn
+            setMultiplayerData(prev => ({
+                ...prev,
+                currentPlayer: prev.currentPlayer + 1,
+                players: updatedPlayers
+            }));
+            startNewGame(); // Start game for next player
+        } else {
+            // Game complete, determine winner
+            const winner = updatedPlayers.reduce((prev, current) =>
+                current.score > prev.score ? current : prev
+            );
+
+            setMultiplayerData(prev => ({
+                ...prev,
+                players: updatedPlayers,
+                gameComplete: true,
+                winner: winner
+            }));
+
+            if (winner.name === 'Player 1') {
+                setUserStats(prev => ({ ...prev, multiplayerWins: prev.multiplayerWins + 1 }));
+            }
+        }
+    };
+
+    // Tournament functions
+    const startTournament = () => {
+        const bracket = [
+            ['Player 1', 'Bot Easy'],
+            ['Bot Medium', 'Bot Hard'],
+            ['Winner 1', 'Winner 2'],
+            ['Champion']
+        ];
+
+        setTournamentData({
+            currentRound: 0,
+            totalRounds: 3,
+            bracket: bracket,
+            isActive: true,
+            winner: null
+        });
+
+        setCurrentScreen('tournament');
+    };
+
+    // Social sharing
+    const shareScore = (score, mode, difficulty) => {
+        const text = `🏏 Just scored ${score} runs in Book Cricket Pro! Playing ${mode} mode on ${difficulty} difficulty. Can you beat my score? 🚀`;
+
+        if (navigator.share) {
+            navigator.share({
+                title: 'Book Cricket Pro Score',
+                text: text,
+                url: window.location.href
+            });
+        } else {
+            // Fallback to copying to clipboard
+            navigator.clipboard.writeText(text).then(() => {
+                setCelebration('📱 Score copied to clipboard! Share it with friends! 📱');
+                setTimeout(() => setCelebration(''), 3000);
+            });
+        }
+
+        // Unlock social achievement
+        if (!achievements.socialShare) {
+            setAchievements(prev => ({ ...prev, socialShare: true }));
+            setUserStats(prev => ({ ...prev, achievementsUnlocked: prev.achievementsUnlocked + 1 }));
+        }
+    };
+
+    // Enhanced start new game
+    const startNewGame = () => {
+        const startTime = ['timeAttack'].includes(selectedMode) ? Date.now() : null;
+
+        setGameState({
+            currentPage: 1,
+            totalPages: 500,
+            score: 0,
+            wickets: 0,
+            ballsFaced: 0,
+            isGameOver: false,
+            lastDigit: null,
+            runs: [],
+            gameMode: selectedMode,
+            targetScore: selectedMode === 'chase' ? targetScore : null,
+            playerName: multiplayerData.isActive ? `Player ${multiplayerData.currentPlayer}` : 'Player 1',
+            difficulty: selectedDifficulty,
+            streak: 0,
+            maxStreak: 0,
+            powerUps: {
+                luckyPage: gameState.powerUps?.luckyPage || 0,
+                doubleRuns: gameState.powerUps?.doubleRuns || 0,
+                extraLife: gameState.powerUps?.extraLife || 0
+            },
+            activePowerUp: null,
+            doubleRunsRemaining: 0,
+            timeLimit: selectedMode === 'timeAttack' ? 120 : null,
+            startTime: startTime
+        });
+
+        setCelebration('');
+        setCurrentScreen('game');
+    };
+
+    // Update stats and check achievements (keeping existing logic)
+    const updateStats = (newState) => {
+        setUserStats(prev => {
+            const newStats = { ...prev };
+
+            if (newState.isGameOver) {
+                newStats.totalMatches += 1;
+                newStats.totalRuns += newState.score;
+                newStats.totalWickets += newState.wickets;
+                newStats.totalBalls += newState.ballsFaced;
+                newStats.highestScore = Math.max(newStats.highestScore, newState.score);
+                newStats.longestStreak = Math.max(newStats.longestStreak, newState.maxStreak);
+                newStats.averageScore = Math.round(newStats.totalRuns / newStats.totalMatches);
+                newStats.strikeRate = Math.round((newStats.totalRuns / newStats.totalBalls) * 100);
+                newStats.lastPlayedDate = new Date().toISOString();
+
+                const sixes = newState.runs.filter(r => r.runs === 6).length;
+                const fours = newState.runs.filter(r => r.runs === 4).length;
+                newStats.totalSixes += sixes;
+                newStats.totalFours += fours;
+
+                // Check for fastest fifty
+                if (newState.score >= 50 && newState.ballsFaced < (newStats.fastestFifty || 999)) {
+                    newStats.fastestFifty = newState.ballsFaced;
+                }
+
+                if (newState.score >= 50 && newState.wickets === 0) {
+                    newStats.perfectGames += 1;
+                }
+            }
+
+            return newStats;
+        });
+    };
+
+    const checkAchievements = (newState) => {
+        const newAchievements = { ...achievements };
+        let achievementUnlocked = false;
+
+        // Existing achievement checks
+        if (!achievements.firstSix && newState.runs.some(r => r.runs === 6)) {
+            newAchievements.firstSix = true;
+            achievementUnlocked = 'firstSix';
+        }
+        if (!achievements.centurion && newState.score >= 100) {
+            newAchievements.centurion = true;
+            achievementUnlocked = 'centurion';
+        }
+        if (!achievements.speedster && newState.gameMode === 'timeAttack' && newState.score >= 50) {
+            newAchievements.speedster = true;
+            achievementUnlocked = 'speedster';
+        }
+
+        if (achievementUnlocked) {
+            setAchievements(newAchievements);
+            setNewAchievement(achievementUnlocked);
+            setTimeout(() => setNewAchievement(''), 4000);
+        }
+    };
+
+    const resetGame = () => {
+        setGameState(prev => ({
+            currentPage: 1,
+            totalPages: 500,
+            score: 0,
+            wickets: 0,
+            ballsFaced: 0,
+            isGameOver: false,
+            lastDigit: null,
+            runs: [],
+            gameMode: prev.gameMode,
+            targetScore: prev.targetScore,
+            playerName: prev.playerName,
+            difficulty: prev.difficulty,
+            streak: 0,
+            maxStreak: prev.maxStreak,
+            powerUps: prev.powerUps,
+            activePowerUp: null,
+            timeLimit: prev.timeLimit,
+            startTime: prev.gameMode === 'timeAttack' ? Date.now() : null
+        }));
+        setCelebration('');
+        setCurrentScreen('game');
+    };
+
+    const goToHome = () => {
+        setCurrentScreen('home');
+        setMultiplayerData(prev => ({ ...prev, isActive: false }));
+        setTournamentData(prev => ({ ...prev, isActive: false }));
+        setGameState(prev => ({
+            ...prev,
+            isGameOver: false,
+            score: 0,
+            wickets: 0,
+            ballsFaced: 0,
+            runs: [],
+            streak: 0
+        }));
+    };
+
+    const achievementCount = Object.values(achievements).filter(Boolean).length;
+
+    // HOME SCREEN
+    if (currentScreen === 'home') {
+        return (
+            <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 p-4 relative overflow-hidden">
+                {/* Enhanced background elements */}
+                <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                    <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-yellow-400 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"></div>
+                    <div className="absolute top-3/4 right-1/4 w-96 h-96 bg-pink-400 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"></div>
+                    <div className="absolute bottom-1/4 left-1/3 w-96 h-96 bg-blue-400 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"></div>
+                </div>
+
+                <div className="max-w-md mx-auto relative z-10">
+                    <div className="bg-gradient-to-br from-white to-blue-50 rounded-3xl shadow-2xl overflow-hidden border-4 border-white backdrop-blur-lg">
+                        {/* Enhanced Header */}
+                        <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 p-8 text-white relative overflow-hidden text-center">
+                            <div className="absolute inset-0 bg-black opacity-10"></div>
+                            <div className="relative">
+                                <BookOpen className="w-16 h-16 mx-auto mb-4 animate-bounce" />
+                                <h1 className="text-4xl font-bold bg-gradient-to-r from-yellow-300 to-orange-300 bg-clip-text text-transparent mb-2">
+                                    Book Cricket Pro
+                                </h1>
+                                <p className="text-blue-100 text-lg font-medium">🏫 Relive your school days! 📚</p>
+                                <div className="mt-4 flex justify-center gap-2 flex-wrap">
+                                    <span className="px-3 py-1 bg-gradient-to-r from-emerald-500 to-blue-500 rounded-full text-sm font-bold shadow-lg">
+                                        🏆 {achievementCount}/16 Achievements
+                                    </span>
+                                    <span className="px-3 py-1 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full text-sm font-bold shadow-lg">
+                                        📊 {userStats.totalMatches} Games
+                                    </span>
+                                    <span className="px-3 py-1 bg-gradient-to-r from-orange-500 to-red-500 rounded-full text-sm font-bold shadow-lg">
+                                        🔥 {userStats.highestScore} Best
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Daily Challenge */}
+                        <div className="p-6 bg-gradient-to-r from-yellow-400 to-orange-400 text-black">
+                            <div className="text-center">
+                                <h3 className="font-bold text-lg mb-2">🎯 Daily Challenge</h3>
+                                <p className="text-sm mb-2">{dailyChallenge.description}</p>
+                                <div className="flex justify-between items-center">
+                                    <span className="text-xs">Progress: {dailyChallenge.progress}/{dailyChallenge.target}</span>
+                                    <span className="text-xs">⏰ {dailyChallenge.expiresIn}</span>
+                                </div>
+                                <div className="bg-white rounded-full h-2 mt-2">
+                                    <div
+                                        className="bg-green-500 h-2 rounded-full transition-all duration-500"
+                                        style={{ width: `${(dailyChallenge.progress / dailyChallenge.target) * 100}%` }}
+                                    ></div>
+                                </div>
+                                {dailyChallenge.completed && (
+                                    <div className="text-green-700 font-bold mt-2">✅ Completed! Reward: {dailyChallenge.reward}</div>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Game Setup */}
+                        <div className="p-8 space-y-8">
+                            {/* Difficulty Selection */}
+                            <div>
+                                <h3 className="text-2xl font-bold text-gray-800 mb-6 text-center">🎮 Choose Difficulty</h3>
+                                <div className="grid grid-cols-2 gap-4">
+                                    {Object.entries(difficulties).map(([key, diff]) => (
+                                        <button
+                                            key={key}
+                                            onClick={() => setSelectedDifficulty(key)}
+                                            className={`p-4 rounded-2xl border-3 text-center transition-all transform hover:scale-105 ${
+                                                selectedDifficulty === key
+                                                    ? 'border-blue-500 bg-gradient-to-r from-blue-50 to-purple-50 shadow-xl scale-105'
+                                                    : 'border-gray-200 hover:border-gray-300 bg-white shadow-md'
+                                            }`}
+                                        >
+                                            <div className="text-3xl mb-2">{diff.icon}</div>
+                                            <div className="font-bold text-lg">{diff.name}</div>
+                                            <div className="text-sm text-gray-600">{diff.description}</div>
+                                            <div className="text-xs text-purple-600 font-semibold mt-1">×{diff.multiplier} points</div>
+                                            <div className="text-xs text-green-600 font-semibold">🎁 {Math.round(diff.powerUpChance * 100)}% power-ups</div>
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Enhanced Game Mode Selection */}
+                            <div>
+                                <h3 className="text-2xl font-bold text-gray-800 mb-6 text-center">🏏 Game Mode</h3>
+                                <div className="grid grid-cols-2 gap-3">
+                                    {Object.entries(gameModes).map(([key, mode]) => (
+                                        <button
+                                            key={key}
+                                            onClick={() => setSelectedMode(key)}
+                                            className={`p-3 rounded-2xl border-3 text-center transition-all transform hover:scale-105 ${
+                                                selectedMode === key
+                                                    ? 'border-green-500 bg-gradient-to-r from-green-50 to-emerald-50 shadow-xl'
+                                                    : 'border-gray-200 hover:border-gray-300 bg-white shadow-md'
+                                            }`}
+                                        >
+                                            <div className="text-2xl mb-2">{mode.icon}</div>
+                                            <div className="font-bold text-sm">{mode.name}</div>
+                                            <div className="text-xs text-gray-600">{mode.description}</div>
+                                            {selectedMode === key && <Star className="w-4 h-4 text-yellow-500 animate-spin mx-auto mt-1" />}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Chase Target Input */}
+                            {selectedMode === 'chase' && (
+                                <div className="bg-gradient-to-r from-yellow-400 to-orange-400 text-black font-bold rounded-lg p-4 shadow-lg border-2 border-yellow-600">
+                                    <h4 className="font-bold text-orange-800 mb-3 text-center">🎯 Set Target Score</h4>
+                                    <input
+                                        type="number"
+                                        value={targetScore || ''}
+                                        onChange={(e) => setTargetScore(parseInt(e.target.value) || null)}
+                                        placeholder="Enter target score..."
+                                        className="w-full p-3 rounded-xl border-2 border-orange-300 text-center text-xl font-bold focus:border-orange-500 focus:outline-none"
+                                        min="1"
+                                        max="500"
+                                    />
+                                    <p className="text-sm text-orange-700 text-center mt-2">
+                                        Recommended: 50-150 for beginners, 200+ for experts
+                                    </p>
+                                </div>
+                            )}
+
+                            {/* Power-ups Display */}
+                            <div className="bg-gradient-to-r from-purple-100 to-pink-100 rounded-2xl p-4 border-2 border-purple-300">
+                                <h4 className="font-bold text-purple-800 mb-3 text-center">🎁 Your Power-ups</h4>
+                                <div className="grid grid-cols-3 gap-3 text-center">
+                                    {Object.entries(powerUps).map(([key, powerUp]) => (
+                                        <div key={key} className="bg-white rounded-lg p-2">
+                                            <div className="text-xl">{powerUp.icon}</div>
+                                            <div className="text-xs font-bold">{powerUp.name}</div>
+                                            <div className="text-lg font-bold text-purple-600">{gameState.powerUps?.[key] || 0}</div>
+                                        </div>
+                                    ))}
+                                </div>
+                                <p className="text-xs text-purple-600 text-center mt-2">
+                                    Earn power-ups during gameplay based on difficulty level!
+                                </p>
+                            </div>
+
+                            {/* Start Game Button */}
+                            <button
+                                onClick={() => {
+                                    if (selectedMode === 'multiplayer') {
+                                        setMultiplayerData(prev => ({ ...prev, isActive: true, currentPlayer: 1 }));
+                                    } else if (selectedMode === 'tournament') {
+                                        startTournament();
+                                        return;
+                                    }
+                                    startNewGame();
+                                }}
+                                disabled={selectedMode === 'chase' && !targetScore}
+                                className={`w-full py-6 rounded-3xl font-bold text-2xl transition-all duration-300 transform shadow-2xl relative overflow-hidden ${
+                                    selectedMode === 'chase' && !targetScore
+                                        ? 'bg-gray-400 text-gray-600 cursor-not-allowed'
+                                        : 'bg-gradient-to-r from-green-500 via-blue-500 to-purple-500 text-white hover:from-green-600 hover:via-blue-600 hover:to-purple-600 hover:scale-105 active:scale-95'
+                                }`}
+                            >
+                                <div className="relative z-10 flex items-center justify-center gap-3">
+                                    <Play className="w-8 h-8" />
+                                    {selectedMode === 'tournament' ? 'Start Tournament' : 'Start New Game'}
+                                </div>
+                            </button>
+
+                            {/* Quick Access Buttons */}
+                            <div className="grid grid-cols-2 gap-4">
+                                <button
+                                    onClick={() => setShowStats(true)}
+                                    className="py-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-2xl font-bold hover:from-purple-600 hover:to-pink-600 transition-all transform hover:scale-105 shadow-lg flex items-center justify-center gap-2"
+                                >
+                                    <BarChart3 className="w-5 h-5" />
+                                    Statistics
+                                </button>
+                                <button
+                                    onClick={() => setShowAchievements(true)}
+                                    className="py-4 bg-gradient-to-r from-yellow-500 to-orange-500 text-white rounded-2xl font-bold hover:from-yellow-600 hover:to-orange-600 transition-all transform hover:scale-105 shadow-lg flex items-center justify-center gap-2"
+                                >
+                                    <Trophy className="w-5 h-5" />
+                                    Achievements
+                                </button>
+                                <button
+                                    onClick={() => setShowLeaderboard(true)}
+                                    className="py-4 bg-gradient-to-r from-red-500 to-pink-500 text-white rounded-2xl font-bold hover:from-red-600 hover:to-pink-600 transition-all transform hover:scale-105 shadow-lg flex items-center justify-center gap-2"
+                                >
+                                    <Crown className="w-5 h-5" />
+                                    Leaderboard
+                                </button>
+                                <button
+                                    onClick={() => setShowSettings(true)}
+                                    className="py-4 bg-gradient-to-r from-gray-500 to-blue-500 text-white rounded-2xl font-bold hover:from-gray-600 hover:to-blue-600 transition-all transform hover:scale-105 shadow-lg flex items-center justify-center gap-2"
+                                >
+                                    <Settings className="w-5 h-5" />
+                                    Settings
+                                </button>
+                            </div>
+
+                            {/* Rules Button */}
+                            <button
+                                onClick={() => setShowRules(!showRules)}
+                                className="w-full py-4 bg-gradient-to-r from-gray-600 to-gray-700 text-white rounded-2xl font-bold hover:from-gray-700 hover:to-gray-800 transition-all transform hover:scale-105 shadow-lg"
+                            >
+                                {showRules ? 'Hide Rules' : 'Show Rules & Power-ups'}
+                            </button>
+
+                            {/* Enhanced Rules Section */}
+                            {showRules && (
+                                <div className="bg-gradient-to-r from-yellow-100 via-orange-100 to-red-100 rounded-3xl border-4 border-yellow-300 shadow-lg p-6">
+                                    <h3 className="font-bold text-orange-800 mb-4 text-xl text-center">📋 How to Play</h3>
+                                    <div className="text-sm text-orange-700 space-y-3">
+                                        <div className="bg-white rounded-lg p-3 shadow-md">
+                                            <p className="font-semibold mb-2">🎯 Basic Rules:</p>
+                                            <p>• Tap "Turn Page" to get a random page number (1-500)</p>
+                                            <p>• Only digits 1, 2, 3, 4, 6 score runs</p>
+                                            <p>• Other digits are either OUT or dot balls</p>
+                                            <p>• Game ends when you lose 10 wickets</p>
+                                        </div>
+
+                                        <div className="bg-white rounded-lg p-3 shadow-md">
+                                            <p className="font-semibold mb-2">🎁 Power-ups:</p>
+                                            <div className="text-xs space-y-1">
+                                                <p><strong>🍀 Lucky Page:</strong> Next page guaranteed to score</p>
+                                                <p><strong>💫 Double Runs:</strong> 2x runs for next 3 balls</p>
+                                                <p><strong>❤️ Extra Life:</strong> Survive one wicket</p>
+                                            </div>
+                                        </div>
+
+                                        <div className="bg-white rounded-lg p-3 shadow-md">
+                                            <p className="font-semibold mb-2">🏏 Game Modes:</p>
+                                            <div className="text-xs space-y-1">
+                                                <p><strong>⏱️ Time Attack:</strong> Score maximum in 2 minutes</p>
+                                                <p><strong>🛡️ Survival:</strong> How long can you survive?</p>
+                                                <p><strong>👥 Multiplayer:</strong> Take turns with friends</p>
+                                                <p><strong>🏆 Tournament:</strong> Compete in brackets</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Modals for home screen */}
+                {showStats && <StatsModal />}
+                {showAchievements && <AchievementsModal />}
+                {showLeaderboard && <LeaderboardModal />}
+                {showSettings && <SettingsModal />}
+            </div>
+        );
     }
-  };
 
-  const resetGame = () => {
-    setGameState(prev => ({
-      currentPage: 1,
-      totalPages: 500,
-      score: 0,
-      wickets: 0,
-      ballsFaced: 0,
-      isGameOver: false,
-      lastDigit: null,
-      runs: [],
-      gameMode: prev.gameMode,
-      targetScore: prev.targetScore,
-      playerName: prev.playerName,
-      difficulty: prev.difficulty,
-      streak: 0,
-      maxStreak: prev.maxStreak
-    }));
-    setCelebration('');
-  };
+    // TOURNAMENT SCREEN
+    if (currentScreen === 'tournament') {
+        return (
+            <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 p-4 relative overflow-hidden">
+                <div className="max-w-md mx-auto relative z-10">
+                    <div className="bg-gradient-to-br from-white to-blue-50 rounded-3xl shadow-2xl overflow-hidden border-4 border-white">
+                        {/* Tournament Header */}
+                        <div className="bg-gradient-to-r from-yellow-600 via-orange-600 to-red-600 p-6 text-white text-center">
+                            <Crown className="w-12 h-12 mx-auto mb-3 animate-bounce" />
+                            <h1 className="text-3xl font-bold mb-2">🏆 Tournament Mode 🏆</h1>
+                            <p className="text-sm">Round {tournamentData.currentRound + 1} of {tournamentData.totalRounds}</p>
+                        </div>
 
-  const setChaseTarget = () => {
-    const target = prompt("Enter target score to chase:");
-    if (target && !isNaN(target)) {
-      setGameState(prev => ({
-        ...prev,
-        targetScore: parseInt(target),
-        gameMode: 'chase'
-      }));
-      resetGame();
+                        <div className="p-6 space-y-6">
+                            {/* Tournament Bracket */}
+                            <div className="bg-gradient-to-r from-blue-100 to-purple-100 rounded-2xl p-4 border-2 border-blue-300">
+                                <h3 className="font-bold text-blue-800 mb-3 text-center">Tournament Bracket</h3>
+                                <div className="space-y-2">
+                                    {tournamentData.bracket.map((round, roundIndex) => (
+                                        <div key={roundIndex} className="space-y-2">
+                                            <h4 className="font-bold text-sm text-center">{
+                                                roundIndex === 0 ? 'Quarter Finals' :
+                                                    roundIndex === 1 ? 'Semi Finals' :
+                                                        roundIndex === 2 ? 'Final' : 'Champion'
+                                            }</h4>
+                                            <div className="grid grid-cols-2 gap-2">
+                                                {round.map((player, playerIndex) => (
+                                                    <div key={playerIndex} className={`p-2 rounded-lg text-center text-sm ${
+                                                        roundIndex <= tournamentData.currentRound ?
+                                                            'bg-green-200 text-green-800' :
+                                                            'bg-gray-200 text-gray-600'
+                                                    }`}>
+                                                        {player}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Current Match */}
+                            <div className="bg-gradient-to-r from-red-100 to-pink-100 rounded-2xl p-4 border-2 border-red-300">
+                                <h3 className="font-bold text-red-800 mb-3 text-center">Current Match</h3>
+                                <div className="text-center">
+                                    <p className="text-lg font-bold">
+                                        {tournamentData.bracket[tournamentData.currentRound]?.[0]} vs {tournamentData.bracket[tournamentData.currentRound]?.[1]}
+                                    </p>
+                                    <p className="text-sm text-gray-600 mt-2">You are playing as {tournamentData.bracket[tournamentData.currentRound]?.[0]}</p>
+                                </div>
+                            </div>
+
+                            {/* Tournament Actions */}
+                            <div className="space-y-4">
+                                <button
+                                    onClick={() => {
+                                        setGameState(prev => ({
+                                            ...prev,
+                                            gameMode: 'tournament',
+                                            playerName: tournamentData.bracket[tournamentData.currentRound]?.[0]
+                                        }));
+                                        startNewGame();
+                                    }}
+                                    className="w-full py-4 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-2xl font-bold text-lg hover:from-green-600 hover:to-emerald-600 transition-all transform hover:scale-105 shadow-lg flex items-center justify-center gap-3"
+                                >
+                                    <Swords className="w-6 h-6" />
+                                    Start Match
+                                </button>
+
+                                <button
+                                    onClick={goToHome}
+                                    className="w-full py-4 bg-gradient-to-r from-gray-500 to-blue-500 text-white rounded-2xl font-bold text-lg hover:from-gray-600 hover:to-blue-600 transition-all transform hover:scale-105 shadow-lg flex items-center justify-center gap-3"
+                                >
+                                    <ArrowLeft className="w-6 h-6" />
+                                    Back to Menu
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
     }
-  };
 
-  const changeDifficulty = (difficulty) => {
-    setGameState(prev => ({ ...prev, difficulty }));
-    setShowSettings(false);
-  };
+    // GAME OVER SCREEN
+    if (currentScreen === 'gameOver') {
+        const isMultiplayer = gameState.gameMode === 'multiplayer';
+        const isTournament = gameState.gameMode === 'tournament';
 
-  const achievementCount = Object.values(achievements).filter(Boolean).length;
-
-  return (
-      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50 p-2 sm:p-4">
-        {/* New Achievement Popup */}
-        {newAchievement && (
-            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-              <div className="bg-white rounded-3xl p-6 max-w-sm w-full mx-4 text-center animate-bounce shadow-2xl">
-                <div className="text-6xl mb-4">{achievementDefs[newAchievement].icon}</div>
-                <h3 className="text-2xl font-bold text-yellow-600 mb-2">Achievement Unlocked!</h3>
-                <p className="text-lg font-semibold">{achievementDefs[newAchievement].name}</p>
-                <p className="text-gray-600">{achievementDefs[newAchievement].desc}</p>
-              </div>
-            </div>
-        )}
-
-        {/* Main Container */}
-        <div className="max-w-md mx-auto bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl overflow-hidden border border-amber-200">
-          {/* Header */}
-          <div className="bg-gradient-to-r from-amber-600 to-orange-600 p-4 sm:p-6 text-white relative overflow-hidden">
-            <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width=\"40\" height=\"40\" viewBox=\"0 0 40 40\" xmlns=\"http://www.w3.org/2000/svg\"%3E%3Cg fill=\"none\" fill-rule=\"evenodd\"%3E%3Cg fill=\"%23ffffff\" fill-opacity=\"0.1\"%3E%3Ccircle cx=\"20\" cy=\"20\" r=\"2\"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-20"></div>
-          <div className="relative flex justify-between items-start">
-            <div className="flex-1">
-              <div className="flex items-center gap-2 mb-2">
-                <BookOpen className="w-6 h-6 sm:w-8 sm:h-8" />
-                <h1 className="text-xl sm:text-2xl font-bold">Book Cricket</h1>
-              </div>
-              <p className="text-amber-100 text-xs sm:text-sm">Relive your school days!</p>
-              <div className="flex items-center gap-2 mt-2">
-                <span className={`px-2 py-1 bg-${difficulties[gameState.difficulty].color}-500 rounded-full text-xs font-bold`}>
-                  {difficulties[gameState.difficulty].name}
-                </span>
-                <span className="px-2 py-1 bg-white/20 rounded-full text-xs font-bold">
-                  🏆 {achievementCount}/10
-                </span>
-              </div>
-            </div>
-            <div className="flex gap-2">
-              <button
-                  onClick={() => setShowAchievements(true)}
-                  className="p-2 bg-white/20 rounded-full hover:bg-white/30 transition-colors"
-              >
-                <Trophy className="w-5 h-5" />
-              </button>
-              <button
-                  onClick={() => setShowSettings(true)}
-                  className="p-2 bg-white/20 rounded-full hover:bg-white/30 transition-colors"
-              >
-                <Settings className="w-5 h-5" />
-              </button>
-              <button
-                  onClick={audioEnabled ? () => setAudioEnabled(false) : enableAudio}
-                  className="p-2 bg-white/20 rounded-full hover:bg-white/30 transition-colors"
-              >
-                {audioEnabled ? <Volume2 className="w-5 h-5" /> : <VolumeX className="w-5 h-5" />}
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Score Display */}
-        <div className="p-4 sm:p-6 bg-gradient-to-b from-white to-amber-50">
-          <div className="text-center mb-4 sm:mb-6">
-            <div className="text-3xl sm:text-4xl font-bold text-gray-800 mb-2">
-              {gameState.score}/{gameState.wickets}
-            </div>
-            <div className="text-xs sm:text-sm text-gray-600 space-y-1">
-              <div>Balls: {gameState.ballsFaced} | Streak: {gameState.streak} | Best: {gameState.maxStreak}</div>
-              {gameState.gameMode === 'chase' && gameState.targetScore && (
-                  <div className="text-orange-600 font-semibold">
-                    Target: {gameState.targetScore} | Need: {Math.max(0, gameState.targetScore - gameState.score + 1)}
-                  </div>
-              )}
-            </div>
-          </div>
-
-          {/* Current Page Display */}
-          <div className="bg-gradient-to-r from-blue-100 to-indigo-100 rounded-2xl p-4 mb-4 border-2 border-dashed border-blue-300">
-            <div className="text-center">
-              <div className="text-base sm:text-lg font-semibold text-gray-700 mb-2">Current Page</div>
-              <div className="text-2xl sm:text-3xl font-bold text-blue-700">
-                {gameState.currentPage || '---'}
-              </div>
-              {gameState.lastDigit !== null && (
-                  <div className="mt-2 text-sm text-gray-600">
-                    Last digit: <span className="font-bold text-lg">{gameState.lastDigit}</span>
-                  </div>
-              )}
-            </div>
-          </div>
-
-          {/* Celebration */}
-          {celebration && (
-              <div className="text-center mb-4 text-lg sm:text-2xl font-bold text-orange-600 animate-pulse">
-                {celebration}
-              </div>
-          )}
-
-          {/* Turn Page Button */}
-          <button
-              onClick={turnPage}
-              disabled={gameState.isGameOver}
-              className={`w-full py-3 sm:py-4 rounded-2xl font-bold text-base sm:text-lg transition-all duration-300 transform active:scale-95 ${
-                  gameState.isGameOver
-                      ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                      : 'bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:from-green-600 hover:to-emerald-700 hover:scale-105 shadow-lg hover:shadow-xl'
-              }`}
-          >
-            {gameState.isGameOver ? 'Game Over!' : '📖 Turn Page'}
-          </button>
-
-          {/* Game Over Message */}
-          {gameState.isGameOver && (
-              <div className="mt-4 p-4 bg-gradient-to-r from-purple-100 to-pink-100 rounded-2xl text-center border-2 border-purple-300">
-                <Trophy className="w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-2 text-purple-600" />
-                <div className="font-bold text-purple-800 text-sm sm:text-base">
-                  {gameState.gameMode === 'chase' && gameState.score > gameState.targetScore
-                      ? `🎉 Target Chased! Won by ${10 - gameState.wickets} wickets!`
-                      : gameState.gameMode === 'chase' && gameState.wickets >= 10
-                          ? `💔 Target Missed! Lost by ${gameState.targetScore - gameState.score} runs!`
-                          : `Final Score: ${gameState.score}/${gameState.wickets} in ${gameState.ballsFaced} balls`
-                  }
+        return (
+            <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 p-4 relative overflow-hidden">
+                {/* Background elements */}
+                <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                    <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-yellow-400 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"></div>
+                    <div className="absolute top-3/4 right-1/4 w-96 h-96 bg-pink-400 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"></div>
                 </div>
-              </div>
-          )}
 
-          {/* Controls */}
-          <div className="mt-4 sm:mt-6 space-y-3">
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                  onClick={resetGame}
-                  className="py-2 sm:py-3 bg-blue-500 text-white rounded-xl font-semibold hover:bg-blue-600 transition-colors flex items-center justify-center gap-2 text-sm sm:text-base"
-              >
-                <RotateCcw className="w-4 h-4" />
-                New Game
-              </button>
-              <button
-                  onClick={setChaseTarget}
-                  className="py-2 sm:py-3 bg-orange-500 text-white rounded-xl font-semibold hover:bg-orange-600 transition-colors flex items-center justify-center gap-2 text-sm sm:text-base"
-              >
-                <Target className="w-4 h-4" />
-                Chase
-              </button>
-            </div>
+                <div className="max-w-md mx-auto relative z-10">
+                    <div className="bg-gradient-to-br from-white to-blue-50 rounded-3xl shadow-2xl overflow-hidden border-4 border-white backdrop-blur-lg">
+                        {/* Header */}
+                        <div className="bg-gradient-to-r from-purple-600 via-pink-600 to-red-600 p-6 text-white text-center relative overflow-hidden">
+                            <div className="absolute inset-0 bg-black opacity-10"></div>
+                            <div className="relative">
+                                <Crown className="w-12 h-12 mx-auto mb-3 text-yellow-300 animate-bounce" />
+                                <h1 className="text-3xl font-bold mb-2">
+                                    {isMultiplayer ? '👥 Match Complete! 👥' :
+                                        isTournament ? '🏆 Tournament Match! 🏆' :
+                                            '🏏 Match Complete! 🏏'}
+                                </h1>
+                            </div>
+                        </div>
 
-            <button
-                onClick={() => setShowRules(!showRules)}
-                className="w-full py-2 sm:py-3 bg-gray-600 text-white rounded-xl font-semibold hover:bg-gray-700 transition-colors text-sm sm:text-base"
-            >
-              {showRules ? 'Hide Rules' : 'Show Rules'}
-            </button>
-          </div>
+                        {/* Game Results */}
+                        <div className="p-8 space-y-6">
+                            {/* Final Score */}
+                            <div className="text-center bg-gradient-to-r from-blue-100 to-purple-100 rounded-3xl p-6 border-2 border-blue-300">
+                                <div className="text-6xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-3">
+                                    {gameState.score}/{gameState.wickets}
+                                </div>
+                                <div className="text-lg text-gray-700 mb-3">
+                                    {gameState.gameMode === 'chase' && gameState.score > gameState.targetScore
+                                        ? `🎉 VICTORIOUS! Target chased with ${10 - gameState.wickets} wickets to spare! 🎉`
+                                        : gameState.gameMode === 'chase' && gameState.wickets >= 10
+                                            ? `💔 Valiant effort! Fell short by ${gameState.targetScore - gameState.score} runs! 💔`
+                                            : gameState.gameMode === 'timeAttack'
+                                                ? `⏱️ Time Attack Complete! 2 minutes up!`
+                                                : `🏏 Final Score in ${gameState.ballsFaced} balls`
+                                    }
+                                </div>
+                                <div className="text-sm text-gray-600 space-y-1">
+                                    <div>Strike Rate: {gameState.ballsFaced > 0 ? Math.round((gameState.score / gameState.ballsFaced) * 100) : 0}%</div>
+                                    <div>Best Streak: {gameState.maxStreak} balls</div>
+                                    <div>Boundaries: {gameState.runs.filter(r => r.runs >= 4 && !r.isOut).length}</div>
+                                    <div>Difficulty: {difficulties[gameState.difficulty].name} (×{difficulties[gameState.difficulty].multiplier})</div>
+                                </div>
+                            </div>
 
-          {/* Rules */}
-          {showRules && (
-              <div className="mt-4 p-4 bg-yellow-50 rounded-2xl border-2 border-yellow-200">
-                <h3 className="font-bold text-yellow-800 mb-2 text-sm sm:text-base">📋 How to Play</h3>
-                <div className="text-xs sm:text-sm text-yellow-700 space-y-1">
-                  <p>• Tap "Turn Page" to get a random page number</p>
-                  <p>• Score runs based on the last digit and difficulty:</p>
-                  <div className="ml-4 space-y-1">
-                    <p><strong>Easy:</strong> Only 0,9 are out. Bonus runs for 4+</p>
-                    <p><strong>Medium:</strong> 0,7,8,9 are out (classic)</p>
-                    <p><strong>Hard:</strong> 0,6,7,8,9 are out</p>
-                    <p><strong>Nightmare:</strong> 0,5,6,7,8,9 are out!</p>
-                  </div>
-                  <p>• Game ends when you get 10 wickets</p>
-                  <p>• Unlock achievements by playing!</p>
-                </div>
-              </div>
-          )}
+                            {/* Multiplayer Results */}
+                            {isMultiplayer && multiplayerData.gameComplete && (
+                                <div className="bg-gradient-to-r from-green-100 to-emerald-100 rounded-2xl p-4 border-2 border-green-300">
+                                    <h3 className="font-bold text-green-800 mb-3 text-center">👥 Multiplayer Results</h3>
+                                    <div className="space-y-2">
+                                        {multiplayerData.players.map((player, index) => (
+                                            <div key={index} className={`flex justify-between items-center p-2 rounded-lg ${
+                                                player.name === multiplayerData.winner?.name ? 'bg-yellow-200' : 'bg-white'
+                                            }`}>
+                                                <span className="font-bold">
+                                                    {player.name === multiplayerData.winner?.name ? '👑 ' : ''}{player.name}
+                                                </span>
+                                                <span>{player.score}/{player.wickets}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                    <div className="text-center mt-3 text-lg font-bold text-green-700">
+                                        🏆 Winner: {multiplayerData.winner?.name}!
+                                    </div>
+                                </div>
+                            )}
 
-          {/* Recent Runs */}
-          {gameState.runs.length > 0 && (
-              <div className="mt-4 p-4 bg-gray-50 rounded-2xl">
-                <h3 className="font-bold text-gray-700 mb-2 text-sm sm:text-base">Recent Scores</h3>
-                <div className="flex flex-wrap gap-1 sm:gap-2">
-                  {gameState.runs.slice(-12).map((run, index) => (
-                      <span
-                          key={index}
-                          className={`px-2 sm:px-3 py-1 rounded-full text-xs font-bold ${
-                              run.isOut
-                                  ? 'bg-red-200 text-red-800'
-                                  : run.runs >= 6
-                                      ? 'bg-purple-200 text-purple-800'
-                                      : run.runs >= 4
-                                          ? 'bg-green-200 text-green-800'
-                                          : 'bg-blue-200 text-blue-800'
-                          }`}
-                      >
-                    {run.isOut ? 'OUT' : run.runs}
-                  </span>
-                  ))}
-                </div>
-              </div>
-          )}
+                            {/* New Achievement Notification */}
+                            {newAchievement && (
+                                <div className="bg-gradient-to-r from-yellow-100 to-orange-100 rounded-2xl p-4 border-2 border-yellow-300 animate-pulse">
+                                    <div className="text-center">
+                                        <div className="text-3xl mb-2">{achievementDefs[newAchievement].icon}</div>
+                                        <div className="font-bold text-orange-800 text-lg">🎉 NEW ACHIEVEMENT! 🎉</div>
+                                        <div className="font-bold text-gray-700">{achievementDefs[newAchievement].name}</div>
+                                        <div className="text-sm text-gray-600">{achievementDefs[newAchievement].desc}</div>
+                                        <div className="text-sm text-green-600 font-bold">+{achievementDefs[newAchievement].points} points!</div>
+                                    </div>
+                                </div>
+                            )}
 
-          {/* Game History */}
-          {gameHistory.length > 0 && (
-              <div className="mt-4 p-4 bg-indigo-50 rounded-2xl">
-                <h3 className="font-bold text-indigo-700 mb-2 text-sm sm:text-base">🏆 Previous Games</h3>
-                <div className="space-y-1 text-xs sm:text-sm">
-                  {gameHistory.slice(-3).map((game, index) => (
-                      <div key={index} className="text-indigo-600 flex justify-between">
-                        <span>{game.score}/{game.wickets} ({game.balls}b)</span>
-                        <span className="text-gray-500">{game.difficulty} - {game.date}</span>
-                      </div>
-                  ))}
-                </div>
-              </div>
-          )}
-        </div>
-      </div>
+                            {/* Performance Stats */}
+                            <div className="bg-gradient-to-r from-green-100 to-emerald-100 rounded-2xl p-4 border-2 border-green-300">
+                                <h3 className="font-bold text-green-800 mb-3 text-center">📊 Performance Analysis</h3>
+                                <div className="grid grid-cols-2 gap-3 text-sm">
+                                    <div className="bg-white rounded-lg p-3 text-center">
+                                        <div className="text-2xl font-bold text-blue-600">{gameState.runs.filter(r => r.runs === 6).length}</div>
+                                        <div className="text-gray-600">Sixes</div>
+                                    </div>
+                                    <div className="bg-white rounded-lg p-3 text-center">
+                                        <div className="text-2xl font-bold text-green-600">{gameState.runs.filter(r => r.runs === 4).length}</div>
+                                        <div className="text-gray-600">Fours</div>
+                                    </div>
+                                    <div className="bg-white rounded-lg p-3 text-center">
+                                        <div className="text-2xl font-bold text-orange-600">{gameState.runs.filter(r => r.runs === 0 && !r.isOut).length}</div>
+                                        <div className="text-gray-600">Dots</div>
+                                    </div>
+                                    <div className="bg-white rounded-lg p-3 text-center">
+                                        <div className="text-2xl font-bold text-purple-600">{userStats.powerUpsUsed}</div>
+                                        <div className="text-gray-600">Power-ups Used</div>
+                                    </div>
+                                </div>
+                            </div>
 
-  {/* Settings Modal */}
-  {showSettings && (
-      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-40 p-4">
-        <div className="bg-white rounded-3xl p-6 max-w-sm w-full mx-4 max-h-[80vh] overflow-y-auto">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-2xl font-bold">Settings</h2>
-            <button
-                onClick={() => setShowSettings(false)}
-                className="text-gray-500 hover:text-gray-700"
-            >
-              ✕
-            </button>
-          </div>
+                            {/* Share Score */}
+                            <div className="text-center">
+                                <button
+                                    onClick={() => shareScore(gameState.score, gameState.gameMode, gameState.difficulty)}
+                                    className="mb-4 px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-2xl font-bold hover:from-blue-600 hover:to-purple-600 transition-all transform hover:scale-105 shadow-lg flex items-center justify-center gap-2 mx-auto"
+                                >
+                                    <Share2 className="w-5 h-5" />
+                                    Share Your Score
+                                </button>
+                            </div>
 
-          <div className="space-y-4">
-            <h3 className="font-bold text-gray-700">Difficulty Level</h3>
-            {Object.entries(difficulties).map(([key, diff]) => (
-                <button
-                    key={key}
-                    onClick={() => changeDifficulty(key)}
-                    className={`w-full p-4 rounded-2xl border-2 text-left transition-all ${
-                        gameState.difficulty === key
-                            ? `border-${diff.color}-500 bg-${diff.color}-50`
-                            : 'border-gray-200 hover:border-gray-300'
-                    }`}
-                >
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <div className="font-bold">{diff.name}</div>
-                      <div className="text-sm text-gray-600">{diff.description}</div>
+                            {/* Action Buttons */}
+                            <div className="space-y-4">
+                                {!isMultiplayer && !isTournament && (
+                                    <button
+                                        onClick={resetGame}
+                                        className="w-full py-4 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-2xl font-bold text-lg hover:from-green-600 hover:to-emerald-600 transition-all transform hover:scale-105 shadow-lg flex items-center justify-center gap-3"
+                                    >
+                                        <RotateCcw className="w-6 h-6" />
+                                        Play Again
+                                    </button>
+                                )}
+
+                                {isMultiplayer && !multiplayerData.gameComplete && (
+                                    <button
+                                        onClick={() => {
+                                            setCurrentScreen('game');
+                                            startNewGame();
+                                        }}
+                                        className="w-full py-4 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-2xl font-bold text-lg hover:from-blue-600 hover:to-purple-600 transition-all transform hover:scale-105 shadow-lg flex items-center justify-center gap-3"
+                                    >
+                                        <Users className="w-6 h-6" />
+                                        Next Player: {multiplayerData.players[multiplayerData.currentPlayer - 1]?.name}
+                                    </button>
+                                )}
+
+                                <button
+                                    onClick={goToHome}
+                                    className="w-full py-4 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-2xl font-bold text-lg hover:from-blue-600 hover:to-purple-600 transition-all transform hover:scale-105 shadow-lg flex items-center justify-center gap-3"
+                                >
+                                    <Home className="w-6 h-6" />
+                                    Back to Menu
+                                </button>
+                            </div>
+
+                            {/* Recent Performance */}
+                            {gameState.runs.length > 0 && (
+                                <div className="bg-gradient-to-r from-gray-100 to-blue-100 rounded-2xl p-4 border-2 border-blue-200">
+                                    <h3 className="font-bold text-gray-700 mb-3 text-center">🏏 Ball by Ball</h3>
+                                    <div className="flex flex-wrap gap-2 justify-center">
+                                        {gameState.runs.slice(-15).map((run, index) => (
+                                            <span
+                                                key={index}
+                                                className={`px-3 py-2 rounded-full text-sm font-bold shadow-md ${
+                                                    run.isOut
+                                                        ? 'bg-gradient-to-r from-red-400 to-red-600 text-white'
+                                                        : run.runs >= 6
+                                                            ? 'bg-gradient-to-r from-purple-400 to-pink-500 text-white'
+                                                            : run.runs >= 4
+                                                                ? 'bg-gradient-to-r from-green-400 to-emerald-500 text-white'
+                                                                : run.runs >= 1
+                                                                    ? 'bg-gradient-to-r from-blue-400 to-cyan-500 text-white'
+                                                                    : 'bg-gradient-to-r from-gray-400 to-gray-500 text-white'
+                                                }`}
+                                            >
+                                                {run.isOut ? 'OUT' : run.runs === 0 ? '•' : run.runs}
+                                            </span>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
                     </div>
-                    {gameState.difficulty === key && <Star className="w-5 h-5 text-yellow-500" />}
-                  </div>
-                </button>
-            ))}
-
-            <div className="border-t pt-4">
-              <h3 className="font-bold text-gray-700 mb-3">Audio Settings</h3>
-
-              <div className="space-y-3">
-                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
-                  <div>
-                    <div className="font-semibold">Sound Effects</div>
-                    <div className="text-sm text-gray-600">Cricket sounds & crowd reactions</div>
-                  </div>
-                  <button
-                      onClick={audioEnabled ? () => setAudioEnabled(false) : enableAudio}
-                      className={`w-12 h-6 rounded-full transition-colors ${
-                          audioEnabled ? 'bg-green-500' : 'bg-gray-300'
-                      } relative`}
-                  >
-                    <div className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-transform ${
-                        audioEnabled ? 'translate-x-6' : 'translate-x-0.5'
-                    }`} />
-                  </button>
                 </div>
-
-                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
-                  <div>
-                    <div className="font-semibold">Background Music</div>
-                    <div className="text-sm text-gray-600">Ambient cricket stadium music</div>
-                  </div>
-                  <button
-                      onClick={toggleBackgroundMusic}
-                      disabled={!audioEnabled}
-                      className={`w-12 h-6 rounded-full transition-colors ${
-                          backgroundMusicEnabled && audioEnabled ? 'bg-blue-500' : 'bg-gray-300'
-                      } relative ${!audioEnabled ? 'opacity-50' : ''}`}
-                  >
-                    <div className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-transform ${
-                        backgroundMusicEnabled && audioEnabled ? 'translate-x-6' : 'translate-x-0.5'
-                    }`} />
-                  </button>
-                </div>
-
-                {!audioEnabled && (
-                    <div className="text-xs text-gray-500 text-center p-2 bg-yellow-50 rounded-lg">
-                      💡 Enable sound effects first to use background music
-                    </div>
-                )}
-              </div>
             </div>
-          </div>
-        </div>
-      </div>
-  )}
+        );
+    }
 
-  {/* Achievements Modal */}
-  {showAchievements && (
-      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-40 p-4">
-        <div className="bg-white rounded-3xl p-6 max-w-md w-full mx-4 max-h-[80vh] overflow-y-auto">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-2xl font-bold flex items-center gap-2">
-              <Trophy className="w-6 h-6 text-yellow-500" />
-              Achievements ({achievementCount}/10)
-            </h2>
-            <button
-                onClick={() => setShowAchievements(false)}
-                className="text-gray-500 hover:text-gray-700"
-            >
-              ✕
-            </button>
-          </div>
+    // GAME SCREEN
+    return (
+        <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 p-4 relative overflow-hidden">
+            {/* Enhanced background elements */}
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-yellow-400 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"></div>
+                <div className="absolute top-3/4 right-1/4 w-96 h-96 bg-pink-400 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"></div>
+                <div className="absolute bottom-1/4 left-1/3 w-96 h-96 bg-blue-400 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"></div>
 
-          <div className="grid gap-3">
-            {Object.entries(achievementDefs).map(([key, achievement]) => (
-                <div
-                    key={key}
-                    className={`p-4 rounded-2xl border-2 transition-all ${
-                        achievements[key]
-                            ? `border-${achievement.color}-400 bg-${achievement.color}-50`
-                            : 'border-gray-200 bg-gray-50 opacity-60'
-                    }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="text-2xl">{achievement.icon}</div>
-                    <div className="flex-1">
-                      <div className="font-bold text-gray-800">{achievement.name}</div>
-                      <div className="text-sm text-gray-600">{achievement.desc}</div>
-                    </div>
-                    {achievements[key] && <Medal className="w-5 h-5 text-yellow-500" />}
-                  </div>
+                {/* Cricket field lines effect */}
+                <div className="absolute inset-0 opacity-5">
+                    <div className="absolute top-1/2 left-0 w-full h-px bg-white"></div>
+                    <div className="absolute top-0 left-1/2 w-px h-full bg-white"></div>
+                    <div className="absolute top-1/2 left-1/2 w-32 h-32 border border-white rounded-full transform -translate-x-1/2 -translate-y-1/2"></div>
                 </div>
-            ))}
-          </div>
+            </div>
+
+            {/* Main Container */}
+            <div className="max-w-md mx-auto relative z-10">
+                <div className="bg-gradient-to-br from-white to-blue-50 rounded-3xl shadow-2xl overflow-hidden border-4 border-white backdrop-blur-lg">
+                    {/* Enhanced Header */}
+                    <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 p-6 text-white relative overflow-hidden">
+                        <div className="absolute inset-0 bg-black opacity-10"></div>
+                        <div className="relative">
+                            <div className="flex justify-between items-start">
+                                <div className="flex-1">
+                                    <div className="flex items-center gap-3 mb-3">
+                                        <BookOpen className="w-8 h-8 animate-pulse" />
+                                        <h1 className="text-2xl font-bold bg-gradient-to-r from-yellow-300 to-orange-300 bg-clip-text text-transparent">
+                                            Book Cricket Pro
+                                        </h1>
+                                    </div>
+
+                                    <p className="text-blue-100 text-sm font-medium">
+                                        {gameState.gameMode === 'timeAttack' ? '⏱️ Time Attack Mode!' :
+                                            gameState.gameMode === 't5' ? '⚡ T5 Cricket - 5 Overs!' :
+                                                gameState.gameMode === 't10' ? '🔥 T10 Cricket - 10 Overs!' :
+                                                    gameState.gameMode === 't20' ? '🏆 T20 Cricket - 20 Overs!' :
+                                                        gameState.gameMode === 'multiplayer' ? `👥 ${gameState.playerName}'s Turn` :
+                                                            gameState.gameMode === 'tournament' ? '🏆 Tournament Match!' :
+                                                                '🏫 Live Match in Progress! 📚'}
+                                    </p>
+                                    <div className="flex items-center gap-2 mt-3 flex-wrap">
+                                        <span className="px-3 py-1 bg-gradient-to-r from-emerald-500 to-blue-500 rounded-full text-sm font-bold shadow-lg">
+                                            {difficulties[gameState.difficulty].name}
+                                        </span>
+                                        <span className="px-3 py-1 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-full text-sm font-bold shadow-lg">
+                                            🏆 {achievementCount}/16
+                                        </span>
+                                        {gameState.gameMode === 'timeAttack' && gameState.startTime && (
+                                            <span className="px-3 py-1 bg-gradient-to-r from-red-500 to-pink-500 rounded-full text-lg font-bold shadow-lg animate-pulse">
+                                                ⏰ {Math.max(0, 120 - Math.floor((Date.now() - gameState.startTime) / 1000))}s
+                                            </span>
+                                        )}
+                                        {['t5', 't10', 't20'].includes(gameState.gameMode) && (
+                                            <span className="px-3 py-1 bg-gradient-to-r from-green-500 to-teal-500 rounded-full text-sm font-bold shadow-lg">
+                                                {gameState.gameMode === 't5' ? `⚡ ${Math.floor(gameState.ballsFaced / 6)}.${gameState.ballsFaced % 6}/5.0` :
+                                                    gameState.gameMode === 't10' ? `🔥 ${Math.floor(gameState.ballsFaced / 6)}.${gameState.ballsFaced % 6}/10.0` :
+                                                        `🏆 ${Math.floor(gameState.ballsFaced / 6)}.${gameState.ballsFaced % 6}/20.0`} Overs
+                                            </span>
+                                        )}
+                                    </div>
+                                </div>
+                                <div className="flex flex-col gap-2">
+                                    <button
+                                        onClick={goToHome}
+                                        className="p-2 bg-white bg-opacity-20 rounded-full hover:bg-opacity-30 transition-all transform hover:scale-110 backdrop-blur-sm"
+                                    >
+                                        <ArrowLeft className="w-4 h-4" />
+                                    </button>
+                                    <button
+                                        onClick={() => setShowStats(true)}
+                                        className="p-2 bg-white bg-opacity-20 rounded-full hover:bg-opacity-30 transition-all transform hover:scale-110 backdrop-blur-sm"
+                                    >
+                                        <BarChart3 className="w-4 h-4" />
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Enhanced Score Display */}
+                    <div className="p-6 bg-gradient-to-b from-white to-blue-50">
+                        <div className="text-center mb-6">
+                            <div className="text-5xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-3">
+                                {gameState.score}/{gameState.wickets}
+                            </div>
+                            <div className="text-sm text-gray-600 space-y-2">
+                                <div className="flex justify-center gap-2 flex-wrap">
+                                    <span className="bg-blue-100 px-2 py-1 rounded-full font-semibold text-xs">
+                                        🎾 {Math.floor(gameState.ballsFaced / 6)}.{gameState.ballsFaced % 6}
+                                    </span>
+                                    <span className="bg-orange-100 px-2 py-1 rounded-full font-semibold text-xs">🔥 {gameState.streak}</span>
+                                    <span className="bg-green-100 px-2 py-1 rounded-full font-semibold text-xs">🏆 {gameState.maxStreak}</span>
+                                    <span className="bg-purple-100 px-2 py-1 rounded-full font-semibold text-xs">💯 {userStats.highestScore}</span>
+                                </div>
+                                {gameState.gameMode === 'chase' && gameState.targetScore && (
+                                    <div className="bg-gradient-to-r from-red-500 to-red-700 text-yellow-200 font-bold text-lg rounded-lg p-3 mt-2 shadow-lg border-2 border-yellow-400">
+                                        🎯 TARGET: {gameState.targetScore} | NEED: {Math.max(0, gameState.targetScore - gameState.score + 1)} runs
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Power-ups Display */}
+                        {(Object.values(gameState.powerUps).some(count => count > 0) || gameState.activePowerUp) && (
+                            <div className="bg-gradient-to-r from-purple-100 to-pink-100 rounded-2xl p-4 mb-6 border-2 border-purple-300">
+                                <h4 className="font-bold text-purple-800 mb-3 text-center">🎁 Power-ups</h4>
+                                <div className="grid grid-cols-3 gap-2">
+                                    {Object.entries(powerUps).map(([key, powerUp]) => (
+                                        <button
+                                            key={key}
+                                            onClick={() => usePowerUp(key)}
+                                            disabled={gameState.powerUps[key] <= 0 || gameState.activePowerUp || gameState.isGameOver}
+                                            className={`p-2 rounded-lg text-center transition-all transform hover:scale-105 ${
+                                                gameState.activePowerUp === key ? 'bg-yellow-300 text-yellow-800 animate-pulse border-2 border-yellow-500' :
+                                                    gameState.powerUps[key] > 0 ? 'bg-white text-purple-700 hover:bg-purple-50 shadow-md cursor-pointer border-2 border-purple-200' :
+                                                        'bg-gray-200 text-gray-500 cursor-not-allowed opacity-50 border-2 border-gray-300'
+                                            }`}
+                                        >
+                                            <div className="text-lg">{powerUp.icon}</div>
+                                            <div className="text-xs font-bold">{gameState.powerUps[key] || 0}</div>
+                                            {gameState.activePowerUp === key && <div className="text-xs text-yellow-700">ACTIVE</div>}
+                                            {key === 'doubleRuns' && gameState.activePowerUp === 'doubleRuns' && (
+                                                <div className="text-xs text-yellow-700">{gameState.doubleRunsRemaining || 3} left</div>
+                                            )}
+                                        </button>
+                                    ))}
+                                </div>
+                                {gameState.activePowerUp && (
+                                    <div className="text-center mt-2 text-sm text-purple-700 font-bold">
+                                        ✨ {powerUps[gameState.activePowerUp]?.name} is active! ✨
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
+                        {/* Enhanced Current Page Display */}
+                        <div className={`bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500 rounded-3xl p-6 mb-6 shadow-xl border-4 border-white transform transition-all duration-700 ${
+                            isAnimating ? 'scale-110 rotate-3 shadow-2xl' : 'scale-100 rotate-0'
+                        }`}>
+                            <div className="text-center text-white">
+                                <div className="text-lg font-bold mb-2 opacity-90">📖 Current Page</div>
+                                <div className={`text-5xl font-bold mb-3 transition-all duration-700 ${
+                                    isAnimating ? 'scale-150 text-yellow-300' : 'scale-100'
+                                }`}>
+                                    {gameState.currentPage || '---'}
+                                </div>
+                                {gameState.lastDigit !== null && (
+                                    <div className="text-sm opacity-90">
+                                        Last digit: <span className="font-bold text-2xl text-yellow-300 bg-black bg-opacity-20 px-2 py-1 rounded-full">{gameState.lastDigit}</span>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Enhanced Celebration */}
+                        {celebration && (
+                            <div className="text-center mb-6">
+                                <div className="text-2xl font-bold text-transparent bg-gradient-to-r from-red-500 via-yellow-500 to-green-500 bg-clip-text animate-bounce">
+                                    {celebration}
+                                </div>
+                                <div className="text-sm text-gray-600 mt-1 animate-pulse">
+                                    {audioEnabled ? '🔊 Cricket atmosphere active' : '🔇 Enable audio for cricket sounds'}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Enhanced Turn Page Button */}
+                        <button
+                            onClick={turnPage}
+                            disabled={gameState.isGameOver || isAnimating}
+                            className={`w-full py-5 rounded-3xl font-bold text-xl transition-all duration-300 transform shadow-2xl relative overflow-hidden ${
+                                gameState.isGameOver || isAnimating
+                                    ? 'bg-gray-400 text-gray-600 cursor-not-allowed'
+                                    : 'bg-gradient-to-r from-green-500 via-blue-500 to-purple-500 text-white hover:from-green-600 hover:via-blue-600 hover:to-purple-600 hover:scale-105 active:scale-95'
+                            } ${isAnimating ? 'animate-pulse' : ''}`}
+                        >
+                            <div className="relative z-10">
+                                {gameState.isGameOver ? '🏁 Game Complete!' : isAnimating ? '📖 Turning Page...' : '📖 Turn the Page'}
+                            </div>
+                            {!gameState.isGameOver && !isAnimating && (
+                                <div className="absolute inset-0 bg-gradient-to-r from-yellow-400 to-orange-400 opacity-0 hover:opacity-20 transition-opacity duration-300"></div>
+                            )}
+                        </button>
+
+                        {/* Enhanced Recent Runs */}
+                        {gameState.runs.length > 0 && (
+                            <div className="mt-6 p-5 bg-gradient-to-r from-gray-100 to-blue-100 rounded-3xl shadow-lg border-2 border-blue-200">
+                                <h3 className="font-bold text-gray-700 mb-3 text-lg flex items-center gap-2">
+                                    📊 Recent Performance
+                                    <span className="text-sm bg-blue-500 text-white px-2 py-1 rounded-full">
+                                        Last {Math.min(12, gameState.runs.length)}
+                                    </span>
+                                </h3>
+                                <div className="flex flex-wrap gap-2">
+                                    {gameState.runs.slice(-12).map((run, index) => (
+                                        <span
+                                            key={index}
+                                            className={`px-3 py-2 rounded-full text-sm font-bold shadow-md transform hover:scale-110 transition-all cursor-default ${
+                                                run.isOut
+                                                    ? 'bg-gradient-to-r from-red-400 to-red-600 text-white animate-pulse'
+                                                    : run.runs >= 6
+                                                        ? 'bg-gradient-to-r from-purple-400 to-pink-500 text-white shadow-lg'
+                                                        : run.runs >= 4
+                                                            ? 'bg-gradient-to-r from-green-400 to-emerald-500 text-white'
+                                                            : run.runs >= 1
+                                                                ? 'bg-gradient-to-r from-blue-400 to-cyan-500 text-white'
+                                                                : 'bg-gradient-to-r from-gray-400 to-gray-500 text-white'
+                                            }`}
+                                            title={`Page: ${run.page}, ${run.isOut ? 'OUT' : run.runs === 0 ? 'Dot Ball' : run.runs + ' runs'}`}
+                                        >
+                                            {run.isOut ? 'OUT' : run.runs === 0 ? '•' : run.runs}
+                                        </span>
+                                    ))}
+                                </div>
+                                {gameState.runs.length > 0 && (
+                                    <div className="mt-3 text-xs text-gray-600 bg-white rounded-lg p-2">
+                                        <div className="flex justify-between">
+                                            <span>Boundaries: {gameState.runs.filter(r => r.runs >= 4 && !r.isOut).length}</span>
+                                            <span>Strike Rate: {Math.round((gameState.score / gameState.ballsFaced) * 100)}%</span>
+                                            <span>Dots: {gameState.runs.filter(r => r.runs === 0 && !r.isOut).length}</span>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </div>
+
+            {/* Modals */}
+            {showStats && <StatsModal />}
+            {showAchievements && <AchievementsModal />}
+            {showLeaderboard && <LeaderboardModal />}
+            {showSettings && <SettingsModal />}
         </div>
-      </div>
-  )}
-</div>
-);
+    );
+
+    // Enhanced Stats Modal Component
+    function StatsModal() {
+        return (
+            <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-40 p-4 backdrop-blur-sm">
+                <div className="bg-gradient-to-br from-white to-blue-50 rounded-3xl p-6 max-w-md w-full mx-4 max-h-screen overflow-y-auto shadow-2xl border-4 border-white">
+                    <div className="flex justify-between items-center mb-6">
+                        <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent flex items-center gap-2">
+                            <BarChart3 className="w-6 h-6 text-blue-600" />
+                            Career Statistics
+                        </h2>
+                        <button
+                            onClick={() => setShowStats(false)}
+                            className="text-gray-500 hover:text-gray-700 text-2xl font-bold"
+                        >
+                            ✕
+                        </button>
+                    </div>
+
+                    <div className="space-y-4">
+                        {/* Overall Stats */}
+                        <div className="bg-gradient-to-r from-blue-100 to-purple-100 rounded-2xl p-4 border-2 border-blue-300">
+                            <h3 className="font-bold text-blue-800 mb-3 text-lg">📊 Overall Performance</h3>
+                            <div className="grid grid-cols-2 gap-3 text-sm">
+                                <div className="bg-white rounded-lg p-3 text-center">
+                                    <div className="text-2xl font-bold text-blue-600">{userStats.totalRuns}</div>
+                                    <div className="text-gray-600">Total Runs</div>
+                                </div>
+                                <div className="bg-white rounded-lg p-3 text-center">
+                                    <div className="text-2xl font-bold text-green-600">{userStats.totalMatches}</div>
+                                    <div className="text-gray-600">Matches Played</div>
+                                </div>
+                                <div className="bg-white rounded-lg p-3 text-center">
+                                    <div className="text-2xl font-bold text-orange-600">{userStats.highestScore}</div>
+                                    <div className="text-gray-600">Best Score</div>
+                                </div>
+                                <div className="bg-white rounded-lg p-3 text-center">
+                                    <div className="text-2xl font-bold text-purple-600">{userStats.averageScore}</div>
+                                    <div className="text-gray-600">Average</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Enhanced Batting Stats */}
+                        <div className="bg-gradient-to-r from-green-100 to-emerald-100 rounded-2xl p-4 border-2 border-green-300">
+                            <h3 className="font-bold text-green-800 mb-3 text-lg">🏏 Batting Analysis</h3>
+                            <div className="space-y-2 text-sm">
+                                <div className="flex justify-between bg-white rounded-lg p-2">
+                                    <span>Strike Rate:</span>
+                                    <span className="font-bold text-green-600">{userStats.strikeRate}%</span>
+                                </div>
+                                <div className="flex justify-between bg-white rounded-lg p-2">
+                                    <span>Total Boundaries:</span>
+                                    <span className="font-bold text-blue-600">{userStats.totalFours + userStats.totalSixes}</span>
+                                </div>
+                                <div className="flex justify-between bg-white rounded-lg p-2">
+                                    <span>Fastest Fifty:</span>
+                                    <span className="font-bold text-purple-600">{userStats.fastestFifty || 'N/A'} balls</span>
+                                </div>
+                                <div className="flex justify-between bg-white rounded-lg p-2">
+                                    <span>Perfect Games:</span>
+                                    <span className="font-bold text-gold-600">{userStats.perfectGames}</span>
+                                </div>
+                                <div className="flex justify-between bg-white rounded-lg p-2">
+                                    <span>Power-ups Used:</span>
+                                    <span className="font-bold text-pink-600">{userStats.powerUpsUsed}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* New Game Mode Stats */}
+                        <div className="bg-gradient-to-r from-purple-100 to-pink-100 rounded-2xl p-4 border-2 border-purple-300">
+                            <h3 className="font-bold text-purple-800 mb-3 text-lg">🎮 Game Modes</h3>
+                            <div className="space-y-2 text-sm">
+                                <div className="flex justify-between bg-white rounded-lg p-2">
+                                    <span>Multiplayer Wins:</span>
+                                    <span className="font-bold text-purple-600">{userStats.multiplayerWins}</span>
+                                </div>
+                                <div className="flex justify-between bg-white rounded-lg p-2">
+                                    <span>Tournament Wins:</span>
+                                    <span className="font-bold text-yellow-600">{userStats.tournamentWins}</span>
+                                </div>
+                                <div className="flex justify-between bg-white rounded-lg p-2">
+                                    <span>Challenges Completed:</span>
+                                    <span className="font-bold text-orange-600">{userStats.challengesCompleted}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Achievement Progress */}
+                        <div className="bg-gradient-to-r from-yellow-100 to-orange-100 rounded-2xl p-4 border-2 border-yellow-300">
+                            <h3 className="font-bold text-orange-800 mb-3 text-lg">🏆 Achievements</h3>
+                            <div className="flex justify-between items-center bg-white rounded-lg p-3">
+                                <span>Unlocked:</span>
+                                <span className="font-bold text-2xl text-yellow-600">{achievementCount}/16</span>
+                            </div>
+                            <div className="mt-2">
+                                <div className="bg-gray-200 rounded-full h-3">
+                                    <div
+                                        className="bg-gradient-to-r from-yellow-400 to-orange-500 h-3 rounded-full transition-all duration-500"
+                                        style={{ width: `${(achievementCount / 16) * 100}%` }}
+                                    ></div>
+                                </div>
+                                <div className="text-center text-sm text-gray-600 mt-1">
+                                    {Math.round((achievementCount / 16) * 100)}% Complete
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    // Enhanced Achievements Modal Component
+    function AchievementsModal() {
+        return (
+            <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-40 p-4 backdrop-blur-sm">
+                <div className="bg-gradient-to-br from-white to-purple-50 rounded-3xl p-6 max-w-md w-full mx-4 max-h-screen overflow-y-auto shadow-2xl border-4 border-white">
+                    <div className="flex justify-between items-center mb-6">
+                        <h2 className="text-2xl font-bold flex items-center gap-3">
+                            <Trophy className="w-8 h-8 text-yellow-500 animate-bounce" />
+                            <span className="bg-gradient-to-r from-yellow-500 to-orange-500 bg-clip-text text-transparent">
+                                Achievements ({achievementCount}/16)
+                            </span>
+                        </h2>
+                        <button
+                            onClick={() => setShowAchievements(false)}
+                            className="text-gray-500 hover:text-gray-700 text-2xl font-bold"
+                        >
+                            ✕
+                        </button>
+                    </div>
+
+                    {/* Progress Bar */}
+                    <div className="mb-6">
+                        <div className="bg-gray-200 rounded-full h-4">
+                            <div
+                                className="bg-gradient-to-r from-yellow-400 to-orange-500 h-4 rounded-full transition-all duration-1000 relative"
+                                style={{ width: `${(achievementCount / 16) * 100}%` }}
+                            >
+                                <div className="absolute right-0 top-0 h-4 w-4 bg-white rounded-full shadow-md transform translate-x-2"></div>
+                            </div>
+                        </div>
+                        <div className="text-center text-sm text-gray-600 mt-2">
+                            {Math.round((achievementCount / 16) * 100)}% Complete • Total Points: {Object.keys(achievements).filter(key => achievements[key]).reduce((sum, key) => sum + achievementDefs[key].points, 0)}
+                        </div>
+                    </div>
+
+                    <div className="grid gap-4">
+                        {Object.entries(achievementDefs).map(([key, achievement]) => (
+                            <div
+                                key={key}
+                                className={`p-4 rounded-3xl border-3 transition-all transform hover:scale-105 relative overflow-hidden ${
+                                    achievements[key]
+                                        ? 'border-yellow-400 bg-gradient-to-r from-yellow-50 to-orange-50 shadow-lg'
+                                        : 'border-gray-200 bg-gray-50 opacity-60'
+                                }`}
+                            >
+                                {achievements[key] && (
+                                    <div className="absolute top-2 right-2">
+                                        <div className="bg-green-500 text-white text-xs px-2 py-1 rounded-full font-bold">
+                                            +{achievement.points}
+                                        </div>
+                                    </div>
+                                )}
+                                <div className="flex items-center gap-4">
+                                    <div className={`text-3xl ${achievements[key] ? 'animate-pulse' : 'grayscale'}`}>
+                                        {achievement.icon}
+                                    </div>
+                                    <div className="flex-1">
+                                        <div className="font-bold text-gray-800 text-lg">{achievement.name}</div>
+                                        <div className="text-sm text-gray-600">{achievement.desc}</div>
+                                        {achievements[key] && (
+                                            <div className="text-xs text-green-600 font-semibold mt-1">✅ UNLOCKED!</div>
+                                        )}
+                                    </div>
+                                    {achievements[key] && (
+                                        <Medal className="w-6 h-6 text-yellow-500 animate-spin" />
+                                    )}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* Achievement Tips */}
+                    <div className="mt-6 p-4 bg-gradient-to-r from-blue-100 to-purple-100 rounded-2xl border-2 border-blue-300">
+                        <h4 className="font-bold text-blue-800 mb-2">💡 Pro Tips to Unlock More:</h4>
+                        <div className="text-sm text-blue-700 space-y-1">
+                            <p>• Try different difficulty levels for unique achievements</p>
+                            <p>• Use power-ups strategically for better scores</p>
+                            <p>• Play multiplayer and tournament modes</p>
+                            <p>• Share your scores to unlock social achievements</p>
+                            <p>• Complete daily challenges for bonus rewards</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    // New Leaderboard Modal Component
+    function LeaderboardModal() {
+        return (
+            <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-40 p-4 backdrop-blur-sm">
+                <div className="bg-gradient-to-br from-white to-yellow-50 rounded-3xl p-6 max-w-md w-full mx-4 max-h-screen overflow-y-auto shadow-2xl border-4 border-white">
+                    <div className="flex justify-between items-center mb-6">
+                        <h2 className="text-2xl font-bold flex items-center gap-3">
+                            <Crown className="w-8 h-8 text-yellow-500 animate-bounce" />
+                            <span className="bg-gradient-to-r from-yellow-500 to-orange-500 bg-clip-text text-transparent">
+                                Leaderboard
+                            </span>
+                        </h2>
+                        <button
+                            onClick={() => setShowLeaderboard(false)}
+                            className="text-gray-500 hover:text-gray-700 text-2xl font-bold"
+                        >
+                            ✕
+                        </button>
+                    </div>
+
+                    <div className="space-y-3">
+                        {leaderboard.map((entry, index) => (
+                            <div
+                                key={index}
+                                className={`p-4 rounded-2xl border-2 transition-all transform hover:scale-105 ${
+                                    index === 0 ? 'border-yellow-400 bg-gradient-to-r from-yellow-100 to-orange-100' :
+                                        index === 1 ? 'border-gray-400 bg-gradient-to-r from-gray-100 to-blue-100' :
+                                            index === 2 ? 'border-orange-400 bg-gradient-to-r from-orange-100 to-red-100' :
+                                                'border-gray-200 bg-white'
+                                }`}
+                            >
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-3">
+                                        <div className={`text-2xl font-bold ${
+                                            index === 0 ? 'text-yellow-600' :
+                                                index === 1 ? 'text-gray-600' :
+                                                    index === 2 ? 'text-orange-600' :
+                                                        'text-gray-500'
+                                        }`}>
+                                            {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `${index + 1}.`}
+                                        </div>
+                                        <div>
+                                            <div className="font-bold text-gray-800">{entry.name}</div>
+                                            <div className="text-sm text-gray-600">{entry.date}</div>
+                                        </div>
+                                    </div>
+                                    <div className="text-right">
+                                        <div className="text-2xl font-bold text-blue-600">{entry.score}</div>
+                                        <div className="text-xs text-gray-500">{difficulties[entry.difficulty]?.name}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+
+                    <div className="mt-6 p-4 bg-gradient-to-r from-green-100 to-emerald-100 rounded-2xl border-2 border-green-300">
+                        <h4 className="font-bold text-green-800 mb-2">🎯 Your Best Performance:</h4>
+                        <div className="text-center">
+                            <div className="text-3xl font-bold text-green-600">{userStats.highestScore}</div>
+                            <div className="text-sm text-gray-600">Personal Best</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    // New Settings Modal Component
+    function SettingsModal() {
+        return (
+            <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-40 p-4 backdrop-blur-sm">
+                <div className="bg-gradient-to-br from-white to-gray-50 rounded-3xl p-6 max-w-md w-full mx-4 max-h-screen overflow-y-auto shadow-2xl border-4 border-white">
+                    <div className="flex justify-between items-center mb-6">
+                        <h2 className="text-2xl font-bold flex items-center gap-3">
+                            <Settings className="w-8 h-8 text-gray-600" />
+                            <span className="bg-gradient-to-r from-gray-600 to-blue-600 bg-clip-text text-transparent">
+                                Settings
+                            </span>
+                        </h2>
+                        <button
+                            onClick={() => setShowSettings(false)}
+                            className="text-gray-500 hover:text-gray-700 text-2xl font-bold"
+                        >
+                            ✕
+                        </button>
+                    </div>
+
+                    <div className="space-y-6">
+                        {/* Audio Settings */}
+                        <div className="bg-gradient-to-r from-blue-100 to-purple-100 rounded-2xl p-4 border-2 border-blue-300">
+                            <h3 className="font-bold text-blue-800 mb-4 text-lg">🔊 Audio Settings</h3>
+                            <div className="space-y-4">
+                                <div className="flex items-center justify-between">
+                                    <span className="text-gray-700">Sound Effects</span>
+                                    <button
+                                        onClick={audioEnabled ? () => setAudioEnabled(false) : enableAudio}
+                                        className={`p-3 rounded-full transition-all transform hover:scale-110 ${
+                                            audioEnabled ? 'bg-green-500 text-white' : 'bg-gray-300 text-gray-600'
+                                        }`}
+                                    >
+                                        {audioEnabled ? <Volume2 className="w-6 h-6" /> : <VolumeX className="w-6 h-6" />}
+                                    </button>
+                                </div>
+                                <div className="flex items-center justify-between">
+                                    <span className="text-gray-700">Background Music</span>
+                                    <button
+                                        onClick={() => {
+                                            if (!audioEnabled) enableAudio();
+                                            if (persistentMusicEnabled) {
+                                                setPersistentMusicEnabled(false);
+                                            } else {
+                                                setPersistentMusicEnabled(true);
+                                            }
+                                        }}
+                                        className={`p-3 rounded-full transition-all transform hover:scale-110 ${
+                                            persistentMusicEnabled ? 'bg-blue-500 text-white' : 'bg-gray-300 text-gray-600'
+                                        }`}
+                                    >
+                                        <Music className="w-6 h-6" />
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Game Settings */}
+                        <div className="bg-gradient-to-r from-green-100 to-emerald-100 rounded-2xl p-4 border-2 border-green-300">
+                            <h3 className="font-bold text-green-800 mb-4 text-lg">🎮 Game Preferences</h3>
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="block text-gray-700 mb-2">Default Difficulty</label>
+                                    <select
+                                        value={selectedDifficulty}
+                                        onChange={(e) => setSelectedDifficulty(e.target.value)}
+                                        className="w-full p-3 rounded-lg border-2 border-green-300 focus:border-green-500 focus:outline-none"
+                                    >
+                                        {Object.entries(difficulties).map(([key, diff]) => (
+                                            <option key={key} value={key}>{diff.name}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-gray-700 mb-2">Preferred Game Mode</label>
+                                    <select
+                                        value={selectedMode}
+                                        onChange={(e) => setSelectedMode(e.target.value)}
+                                        className="w-full p-3 rounded-lg border-2 border-green-300 focus:border-green-500 focus:outline-none"
+                                    >
+                                        {Object.entries(gameModes).map(([key, mode]) => (
+                                            <option key={key} value={key}>{mode.name}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Data Management */}
+                        <div className="bg-gradient-to-r from-red-100 to-pink-100 rounded-2xl p-4 border-2 border-red-300">
+                            <h3 className="font-bold text-red-800 mb-4 text-lg">📊 Data Management</h3>
+                            <div className="space-y-3">
+                                <button
+                                    onClick={() => {
+                                        if (confirm('Are you sure you want to reset all statistics? This cannot be undone.')) {
+                                            setUserStats({
+                                                totalRuns: 0, totalMatches: 0, totalWickets: 0, totalBalls: 0,
+                                                totalSixes: 0, totalFours: 0, highestScore: 0, longestStreak: 0,
+                                                averageScore: 0, strikeRate: 0, matchesWon: 0, achievementsUnlocked: 0,
+                                                timePlayedMinutes: 0, favoriteDigit: null, lastPlayedDate: null,
+                                                weeklyGoal: 500, weeklyProgress: 0,
+                                                fastestFifty: null, tournamentWins: 0, multiplayerWins: 0,
+                                                challengesCompleted: 0, powerUpsUsed: 0, perfectGames: 0
+                                            });
+                                            setAchievements({
+                                                firstSix: false, centurion: false, ballOfFire: false, survivor: false,
+                                                chasemaster: false, streakking: false, quickfire: false, boundary: false,
+                                                legend: false, nightmare: false, perfectGame: false, doublecentury: false,
+                                                speedster: false, multiWin: false, tournamentChamp: false, socialShare: false
+                                            });
+                                            setGameHistory([]);
+                                        }
+                                    }}
+                                    className="w-full py-3 bg-red-500 text-white rounded-lg font-bold hover:bg-red-600 transition-all"
+                                >
+                                    Reset All Data
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        const data = {
+                                            userStats,
+                                            achievements,
+                                            gameHistory,
+                                            leaderboard
+                                        };
+                                        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                                        const url = URL.createObjectURL(blob);
+                                        const a = document.createElement('a');
+                                        a.href = url;
+                                        a.download = 'book-cricket-data.json';
+                                        a.click();
+                                        URL.revokeObjectURL(url);
+                                    }}
+                                    className="w-full py-3 bg-blue-500 text-white rounded-lg font-bold hover:bg-blue-600 transition-all"
+                                >
+                                    Export Game Data
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* About */}
+                        <div className="bg-gradient-to-r from-yellow-100 to-orange-100 rounded-2xl p-4 border-2 border-yellow-300">
+                            <h3 className="font-bold text-orange-800 mb-2 text-lg">📚 About Book Cricket Pro</h3>
+                            <div className="text-sm text-orange-700 space-y-2">
+                                <p>Relive the classic school game with modern features!</p>
+                                <p><strong>Version:</strong> 2.0 Enhanced</p>
+                                <p><strong>Features:</strong> Power-ups, Multiplayer, Tournaments, Daily Challenges</p>
+                                <p><strong>New in v2.0:</strong> Time Attack, Survival Mode, Enhanced Audio, Social Sharing</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
 };
 
 export default BookCricket;
