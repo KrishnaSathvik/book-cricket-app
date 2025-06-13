@@ -2134,491 +2134,491 @@ const BookCricket = () => {
         );
     }
 
-        // GAME OVER SCREEN
-        if (currentScreen === 'gameOver') {
-            const isMultiplayer = gameState.gameMode === 'multiplayer';
-            const isTournament = gameState.gameMode === 'tournament';
+    // GAME OVER SCREEN
+    if (currentScreen === 'gameOver') {
+        const isMultiplayer = gameState.gameMode === 'multiplayer';
+        const isTournament = gameState.gameMode === 'tournament';
 
-            return (
-                <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 p-4 relative overflow-hidden">
-                    {/* Background elements */}
-                    <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-yellow-400 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"></div>
-                        <div className="absolute top-3/4 right-1/4 w-96 h-96 bg-pink-400 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"></div>
-                    </div>
+        return (
+            <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 p-4 relative overflow-hidden">
+                {/* Background elements */}
+                <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                    <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-yellow-400 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"></div>
+                    <div className="absolute top-3/4 right-1/4 w-96 h-96 bg-pink-400 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"></div>
+                </div>
 
-                    <div className="max-w-md mx-auto relative z-10">
-                        <div className="bg-gradient-to-br from-white to-blue-50 rounded-3xl shadow-2xl overflow-hidden border-4 border-white backdrop-blur-lg">
-                            {/* Header */}
-                            <div className="bg-gradient-to-r from-purple-600 via-pink-600 to-red-600 p-6 text-white text-center relative overflow-hidden">
-                                <div className="absolute inset-0 bg-black opacity-10"></div>
-                                <div className="relative">
-                                    <Crown className="w-12 h-12 mx-auto mb-3 text-yellow-300 animate-bounce" />
-                                    <h1 className="text-3xl font-bold mb-2">
-                                        {isMultiplayer ? '👥 Match Complete! 👥' :
-                                            isTournament ? '🏆 Tournament Match! 🏆' :
-                                                '🏏 Match Complete! 🏏'}
-                                    </h1>
+                <div className="max-w-md mx-auto relative z-10">
+                    <div className="bg-gradient-to-br from-white to-blue-50 rounded-3xl shadow-2xl overflow-hidden border-4 border-white backdrop-blur-lg">
+                        {/* Header */}
+                        <div className="bg-gradient-to-r from-purple-600 via-pink-600 to-red-600 p-6 text-white text-center relative overflow-hidden">
+                            <div className="absolute inset-0 bg-black opacity-10"></div>
+                            <div className="relative">
+                                <Crown className="w-12 h-12 mx-auto mb-3 text-yellow-300 animate-bounce" />
+                                <h1 className="text-3xl font-bold mb-2">
+                                    {isMultiplayer ? '👥 Match Complete! 👥' :
+                                        isTournament ? '🏆 Tournament Match! 🏆' :
+                                            '🏏 Match Complete! 🏏'}
+                                </h1>
+                            </div>
+                        </div>
+
+                        {/* Game Results */}
+                        <div className="p-8 space-y-6">
+                            {/* Final Score */}
+                            <div className="text-center bg-gradient-to-r from-blue-100 to-purple-100 rounded-3xl p-6 border-2 border-blue-300">
+                                <div className="text-6xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-3">
+                                    {gameState.score}/{gameState.wickets}
+                                </div>
+                                <div className="text-lg text-gray-700 mb-3">
+                                    {gameState.gameMode === 'chase' && gameState.score > gameState.targetScore
+                                        ? `🎉 VICTORIOUS! Target chased with ${10 - gameState.wickets} wickets to spare! 🎉`
+                                        : gameState.gameMode === 'chase' && gameState.wickets >= 10
+                                            ? `💔 Valiant effort! Fell short by ${gameState.targetScore - gameState.score} runs! 💔`
+                                            : gameState.gameMode === 'timeAttack'
+                                                ? `⏱️ Time Attack Complete! 2 minutes up!`
+                                                : `🏏 Final Score in ${gameState.ballsFaced} balls`
+                                    }
+                                </div>
+                                <div className="text-sm text-gray-600 space-y-1">
+                                    <div>Strike Rate: {gameState.ballsFaced > 0 ? Math.round((gameState.score / gameState.ballsFaced) * 100) : 0}%</div>
+                                    <div>Best Streak: {gameState.maxStreak} balls</div>
+                                    <div>Boundaries: {gameState.runs.filter(r => r.runs >= 4 && !r.isOut).length}</div>
+                                    <div>Difficulty: {difficulties[gameState.difficulty].name} (×{difficulties[gameState.difficulty].multiplier})</div>
                                 </div>
                             </div>
 
-                            {/* Game Results */}
-                            <div className="p-8 space-y-6">
-                                {/* Final Score */}
-                                <div className="text-center bg-gradient-to-r from-blue-100 to-purple-100 rounded-3xl p-6 border-2 border-blue-300">
-                                    <div className="text-6xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-3">
-                                        {gameState.score}/{gameState.wickets}
-                                    </div>
-                                    <div className="text-lg text-gray-700 mb-3">
-                                        {gameState.gameMode === 'chase' && gameState.score > gameState.targetScore
-                                            ? `🎉 VICTORIOUS! Target chased with ${10 - gameState.wickets} wickets to spare! 🎉`
-                                            : gameState.gameMode === 'chase' && gameState.wickets >= 10
-                                                ? `💔 Valiant effort! Fell short by ${gameState.targetScore - gameState.score} runs! 💔`
-                                                : gameState.gameMode === 'timeAttack'
-                                                    ? `⏱️ Time Attack Complete! 2 minutes up!`
-                                                    : `🏏 Final Score in ${gameState.ballsFaced} balls`
-                                        }
-                                    </div>
-                                    <div className="text-sm text-gray-600 space-y-1">
-                                        <div>Strike Rate: {gameState.ballsFaced > 0 ? Math.round((gameState.score / gameState.ballsFaced) * 100) : 0}%</div>
-                                        <div>Best Streak: {gameState.maxStreak} balls</div>
-                                        <div>Boundaries: {gameState.runs.filter(r => r.runs >= 4 && !r.isOut).length}</div>
-                                        <div>Difficulty: {difficulties[gameState.difficulty].name} (×{difficulties[gameState.difficulty].multiplier})</div>
-                                    </div>
-                                </div>
-
-                                {/* Multiplayer Results */}
-                                {isMultiplayer && multiplayerData.gameComplete && (
-                                    <div className="bg-gradient-to-r from-green-100 to-emerald-100 rounded-2xl p-4 border-2 border-green-300">
-                                        <h3 className="font-bold text-green-800 mb-3 text-center">👥 Multiplayer Results</h3>
-                                        <div className="space-y-2">
-                                            {multiplayerData.players.map((player, index) => (
-                                                <div key={index} className={`flex justify-between items-center p-2 rounded-lg ${
-                                                    player.name === multiplayerData.winner?.name ? 'bg-yellow-200' : 'bg-white'
-                                                }`}>
+                            {/* Multiplayer Results */}
+                            {isMultiplayer && multiplayerData.gameComplete && (
+                                <div className="bg-gradient-to-r from-green-100 to-emerald-100 rounded-2xl p-4 border-2 border-green-300">
+                                    <h3 className="font-bold text-green-800 mb-3 text-center">👥 Multiplayer Results</h3>
+                                    <div className="space-y-2">
+                                        {multiplayerData.players.map((player, index) => (
+                                            <div key={index} className={`flex justify-between items-center p-2 rounded-lg ${
+                                                player.name === multiplayerData.winner?.name ? 'bg-yellow-200' : 'bg-white'
+                                            }`}>
                                                 <span className="font-bold">
                                                     {player.name === multiplayerData.winner?.name ? '👑 ' : ''}{player.name}
                                                 </span>
-                                                    <span>{player.score}/{player.wickets}</span>
-                                                </div>
-                                            ))}
-                                        </div>
-                                        <div className="text-center mt-3 text-lg font-bold text-green-700">
-                                            🏆 Winner: {multiplayerData.winner?.name}!
-                                        </div>
+                                                <span>{player.score}/{player.wickets}</span>
+                                            </div>
+                                        ))}
                                     </div>
-                                )}
-
-                                {/* New Achievement Notification */}
-                                {newAchievement && (
-                                    <div className="bg-gradient-to-r from-yellow-100 to-orange-100 rounded-2xl p-4 border-2 border-yellow-300 animate-pulse">
-                                        <div className="text-center">
-                                            <div className="text-3xl mb-2">{achievementDefs[newAchievement].icon}</div>
-                                            <div className="font-bold text-orange-800 text-lg">🎉 NEW ACHIEVEMENT! 🎉</div>
-                                            <div className="font-bold text-gray-700">{achievementDefs[newAchievement].name}</div>
-                                            <div className="text-sm text-gray-600">{achievementDefs[newAchievement].desc}</div>
-                                            <div className="text-sm text-green-600 font-bold">+{achievementDefs[newAchievement].points} points!</div>
-                                        </div>
-                                    </div>
-                                )}
-
-                                {/* Performance Stats */}
-                                <div className="bg-gradient-to-r from-green-100 to-emerald-100 rounded-2xl p-4 border-2 border-green-300">
-                                    <h3 className="font-bold text-green-800 mb-3 text-center">📊 Performance Analysis</h3>
-                                    <div className="grid grid-cols-2 gap-3 text-sm">
-                                        <div className="bg-white rounded-lg p-3 text-center">
-                                            <div className="text-2xl font-bold text-blue-600">{gameState.runs.filter(r => r.runs === 6).length}</div>
-                                            <div className="text-gray-600">Sixes</div>
-                                        </div>
-                                        <div className="bg-white rounded-lg p-3 text-center">
-                                            <div className="text-2xl font-bold text-green-600">{gameState.runs.filter(r => r.runs === 4).length}</div>
-                                            <div className="text-gray-600">Fours</div>
-                                        </div>
-                                        <div className="bg-white rounded-lg p-3 text-center">
-                                            <div className="text-2xl font-bold text-orange-600">{gameState.runs.filter(r => r.runs === 0 && !r.isOut).length}</div>
-                                            <div className="text-gray-600">Dots</div>
-                                        </div>
-                                        <div className="bg-white rounded-lg p-3 text-center">
-                                            <div className="text-2xl font-bold text-purple-600">{userStats.powerUpsUsed}</div>
-                                            <div className="text-gray-600">Power-ups Used</div>
-                                        </div>
+                                    <div className="text-center mt-3 text-lg font-bold text-green-700">
+                                        🏆 Winner: {multiplayerData.winner?.name}!
                                     </div>
                                 </div>
+                            )}
 
-                                {/* Share Score */}
-                                <div className="text-center">
+                            {/* New Achievement Notification */}
+                            {newAchievement && (
+                                <div className="bg-gradient-to-r from-yellow-100 to-orange-100 rounded-2xl p-4 border-2 border-yellow-300 animate-pulse">
+                                    <div className="text-center">
+                                        <div className="text-3xl mb-2">{achievementDefs[newAchievement].icon}</div>
+                                        <div className="font-bold text-orange-800 text-lg">🎉 NEW ACHIEVEMENT! 🎉</div>
+                                        <div className="font-bold text-gray-700">{achievementDefs[newAchievement].name}</div>
+                                        <div className="text-sm text-gray-600">{achievementDefs[newAchievement].desc}</div>
+                                        <div className="text-sm text-green-600 font-bold">+{achievementDefs[newAchievement].points} points!</div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Performance Stats */}
+                            <div className="bg-gradient-to-r from-green-100 to-emerald-100 rounded-2xl p-4 border-2 border-green-300">
+                                <h3 className="font-bold text-green-800 mb-3 text-center">📊 Performance Analysis</h3>
+                                <div className="grid grid-cols-2 gap-3 text-sm">
+                                    <div className="bg-white rounded-lg p-3 text-center">
+                                        <div className="text-2xl font-bold text-blue-600">{gameState.runs.filter(r => r.runs === 6).length}</div>
+                                        <div className="text-gray-600">Sixes</div>
+                                    </div>
+                                    <div className="bg-white rounded-lg p-3 text-center">
+                                        <div className="text-2xl font-bold text-green-600">{gameState.runs.filter(r => r.runs === 4).length}</div>
+                                        <div className="text-gray-600">Fours</div>
+                                    </div>
+                                    <div className="bg-white rounded-lg p-3 text-center">
+                                        <div className="text-2xl font-bold text-orange-600">{gameState.runs.filter(r => r.runs === 0 && !r.isOut).length}</div>
+                                        <div className="text-gray-600">Dots</div>
+                                    </div>
+                                    <div className="bg-white rounded-lg p-3 text-center">
+                                        <div className="text-2xl font-bold text-purple-600">{userStats.powerUpsUsed}</div>
+                                        <div className="text-gray-600">Power-ups Used</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Share Score */}
+                            <div className="text-center">
+                                <button
+                                    onClick={() => shareScore(gameState.score, gameState.gameMode, gameState.difficulty)}
+                                    className="mb-4 px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-2xl font-bold hover:from-blue-600 hover:to-purple-600 transition-all transform hover:scale-105 shadow-lg flex items-center justify-center gap-2 mx-auto"
+                                >
+                                    <Share2 className="w-5 h-5" />
+                                    Share Your Score
+                                </button>
+                            </div>
+
+                            {/* Action Buttons */}
+                            <div className="space-y-4">
+                                {!isMultiplayer && !isTournament && (
                                     <button
-                                        onClick={() => shareScore(gameState.score, gameState.gameMode, gameState.difficulty)}
-                                        className="mb-4 px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-2xl font-bold hover:from-blue-600 hover:to-purple-600 transition-all transform hover:scale-105 shadow-lg flex items-center justify-center gap-2 mx-auto"
+                                        onClick={resetGame}
+                                        className="w-full py-4 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-2xl font-bold text-lg hover:from-green-600 hover:to-emerald-600 transition-all transform hover:scale-105 shadow-lg flex items-center justify-center gap-3"
                                     >
-                                        <Share2 className="w-5 h-5" />
-                                        Share Your Score
+                                        <RotateCcw className="w-6 h-6" />
+                                        Play Again
                                     </button>
-                                </div>
+                                )}
 
-                                {/* Action Buttons */}
-                                <div className="space-y-4">
-                                    {!isMultiplayer && !isTournament && (
-                                        <button
-                                            onClick={resetGame}
-                                            className="w-full py-4 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-2xl font-bold text-lg hover:from-green-600 hover:to-emerald-600 transition-all transform hover:scale-105 shadow-lg flex items-center justify-center gap-3"
-                                        >
-                                            <RotateCcw className="w-6 h-6" />
-                                            Play Again
-                                        </button>
-                                    )}
-
-                                    {isMultiplayer && !multiplayerData.gameComplete && (
-                                        <button
-                                            onClick={() => {
-                                                setCurrentScreen('game');
-                                                startNewGame();
-                                            }}
-                                            className="w-full py-4 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-2xl font-bold text-lg hover:from-blue-600 hover:to-purple-600 transition-all transform hover:scale-105 shadow-lg flex items-center justify-center gap-3"
-                                        >
-                                            <Users className="w-6 h-6" />
-                                            Next Player: {multiplayerData.players[multiplayerData.currentPlayer - 1]?.name}
-                                        </button>
-                                    )}
-
+                                {isMultiplayer && !multiplayerData.gameComplete && (
                                     <button
-                                        onClick={goToHome}
+                                        onClick={() => {
+                                            setCurrentScreen('game');
+                                            startNewGame();
+                                        }}
                                         className="w-full py-4 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-2xl font-bold text-lg hover:from-blue-600 hover:to-purple-600 transition-all transform hover:scale-105 shadow-lg flex items-center justify-center gap-3"
                                     >
-                                        <Home className="w-6 h-6" />
-                                        Back to Menu
+                                        <Users className="w-6 h-6" />
+                                        Next Player: {multiplayerData.players[multiplayerData.currentPlayer - 1]?.name}
                                     </button>
-                                </div>
+                                )}
 
-                                {/* Recent Performance */}
-                                {gameState.runs.length > 0 && (
-                                    <div className="bg-gradient-to-r from-gray-100 to-blue-100 rounded-2xl p-4 border-2 border-blue-200">
-                                        <h3 className="font-bold text-gray-700 mb-3 text-center">🏏 Ball by Ball</h3>
-                                        <div className="flex flex-wrap gap-2 justify-center">
-                                            {gameState.runs.slice(-15).map((run, index) => (
-                                                <span
-                                                    key={index}
-                                                    className={`px-3 py-2 rounded-full text-sm font-bold shadow-md ${
-                                                        run.isOut
-                                                            ? 'bg-gradient-to-r from-red-400 to-red-600 text-white'
-                                                            : run.runs >= 6
-                                                                ? 'bg-gradient-to-r from-purple-400 to-pink-500 text-white'
-                                                                : run.runs >= 4
-                                                                    ? 'bg-gradient-to-r from-green-400 to-emerald-500 text-white'
-                                                                    : run.runs >= 1
-                                                                        ? 'bg-gradient-to-r from-blue-400 to-cyan-500 text-white'
-                                                                        : 'bg-gradient-to-r from-gray-400 to-gray-500 text-white'
-                                                    }`}
-                                                >
+                                <button
+                                    onClick={goToHome}
+                                    className="w-full py-4 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-2xl font-bold text-lg hover:from-blue-600 hover:to-purple-600 transition-all transform hover:scale-105 shadow-lg flex items-center justify-center gap-3"
+                                >
+                                    <Home className="w-6 h-6" />
+                                    Back to Menu
+                                </button>
+                            </div>
+
+                            {/* Recent Performance */}
+                            {gameState.runs.length > 0 && (
+                                <div className="bg-gradient-to-r from-gray-100 to-blue-100 rounded-2xl p-4 border-2 border-blue-200">
+                                    <h3 className="font-bold text-gray-700 mb-3 text-center">🏏 Ball by Ball</h3>
+                                    <div className="flex flex-wrap gap-2 justify-center">
+                                        {gameState.runs.slice(-15).map((run, index) => (
+                                            <span
+                                                key={index}
+                                                className={`px-3 py-2 rounded-full text-sm font-bold shadow-md ${
+                                                    run.isOut
+                                                        ? 'bg-gradient-to-r from-red-400 to-red-600 text-white'
+                                                        : run.runs >= 6
+                                                            ? 'bg-gradient-to-r from-purple-400 to-pink-500 text-white'
+                                                            : run.runs >= 4
+                                                                ? 'bg-gradient-to-r from-green-400 to-emerald-500 text-white'
+                                                                : run.runs >= 1
+                                                                    ? 'bg-gradient-to-r from-blue-400 to-cyan-500 text-white'
+                                                                    : 'bg-gradient-to-r from-gray-400 to-gray-500 text-white'
+                                                }`}
+                                            >
                                                 {run.isOut ? 'OUT' : run.runs === 0 ? '•' : run.runs}
                                             </span>
-                                            ))}
-                                        </div>
+                                        ))}
                                     </div>
-                                )}
-                            </div>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
-            );
-        }
+            </div>
+        );
+    }
 
-        // GAME SCREEN
-        return (
-            <>
-                <style>{enhancedStyles}</style>
-                {/* Confetti Effect */}
-                <ConfettiEffect active={visualEffects.confetti} />
+    // GAME SCREEN
+    return (
+        <>
+            <style>{enhancedStyles}</style>
+            {/* Confetti Effect */}
+            <ConfettiEffect active={visualEffects.confetti} />
 
-                <div className={`min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 p-4 relative overflow-hidden 
+            <div className={`min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 p-4 relative overflow-hidden 
             ${weatherSystem.current === 'rainy' ? 'weather-rain' : ''}
             ${weatherSystem.current === 'stormy' && Math.random() < 0.1 ? 'weather-lightning' : ''}
         `}>
-                    {/* Enhanced background elements */}
-                    <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-yellow-400 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"></div>
-                        <div className="absolute top-3/4 right-1/4 w-96 h-96 bg-pink-400 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"></div>
-                        <div className="absolute bottom-1/4 left-1/3 w-96 h-96 bg-blue-400 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"></div>
+                {/* Enhanced background elements */}
+                <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                    <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-yellow-400 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"></div>
+                    <div className="absolute top-3/4 right-1/4 w-96 h-96 bg-pink-400 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"></div>
+                    <div className="absolute bottom-1/4 left-1/3 w-96 h-96 bg-blue-400 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"></div>
 
-                        {/* Cricket field lines effect */}
-                        <div className="absolute inset-0 opacity-5">
-                            <div className="absolute top-1/2 left-0 w-full h-px bg-white"></div>
-                            <div className="absolute top-0 left-1/2 w-px h-full bg-white"></div>
-                            <div className="absolute top-1/2 left-1/2 w-32 h-32 border border-white rounded-full transform -translate-x-1/2 -translate-y-1/2"></div>
-                        </div>
+                    {/* Cricket field lines effect */}
+                    <div className="absolute inset-0 opacity-5">
+                        <div className="absolute top-1/2 left-0 w-full h-px bg-white"></div>
+                        <div className="absolute top-0 left-1/2 w-px h-full bg-white"></div>
+                        <div className="absolute top-1/2 left-1/2 w-32 h-32 border border-white rounded-full transform -translate-x-1/2 -translate-y-1/2"></div>
                     </div>
+                </div>
 
-                    {/* Main Container */}
-                    <div className="max-w-md mx-auto relative z-10">
-                        <div className="bg-gradient-to-br from-white to-blue-50 rounded-3xl shadow-2xl overflow-hidden border-4 border-white backdrop-blur-lg">
-                            {/* Enhanced Header */}
-                            <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 p-6 text-white relative overflow-hidden">
-                                <div className="absolute inset-0 bg-black opacity-10"></div>
-                                <div className="relative">
-                                    <div className="flex justify-between items-start">
-                                        <div className="flex-1">
-                                            <div className="flex items-center gap-3 mb-3">
-                                                <BookOpen className="w-8 h-8 animate-pulse" />
-                                                <h1 className="text-2xl font-bold bg-gradient-to-r from-yellow-300 to-orange-300 bg-clip-text text-transparent">
-                                                    Book Cricket Pro
-                                                </h1>
-                                            </div>
+                {/* Main Container */}
+                <div className="max-w-md mx-auto relative z-10">
+                    <div className="bg-gradient-to-br from-white to-blue-50 rounded-3xl shadow-2xl overflow-hidden border-4 border-white backdrop-blur-lg">
+                        {/* Enhanced Header */}
+                        <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 p-6 text-white relative overflow-hidden">
+                            <div className="absolute inset-0 bg-black opacity-10"></div>
+                            <div className="relative">
+                                <div className="flex justify-between items-start">
+                                    <div className="flex-1">
+                                        <div className="flex items-center gap-3 mb-3">
+                                            <BookOpen className="w-8 h-8 animate-pulse" />
+                                            <h1 className="text-2xl font-bold bg-gradient-to-r from-yellow-300 to-orange-300 bg-clip-text text-transparent">
+                                                Book Cricket Pro
+                                            </h1>
+                                        </div>
 
-                                            <p className="text-blue-100 text-sm font-medium">
-                                                {gameState.gameMode === 'timeAttack' ? '⏱️ Time Attack Mode!' :
-                                                    gameState.gameMode === 't5' ? '⚡ T5 Cricket - 5 Overs!' :
-                                                        gameState.gameMode === 't10' ? '🔥 T10 Cricket - 10 Overs!' :
-                                                            gameState.gameMode === 't20' ? '🏆 T20 Cricket - 20 Overs!' :
-                                                                gameState.gameMode === 'multiplayer' ? `👥 ${gameState.playerName}'s Turn` :
-                                                                    gameState.gameMode === 'tournament' ? '🏆 Tournament Match!' :
-                                                                        '🏫 Live Match in Progress! 📚'}
-                                            </p>
-                                            <div className="flex items-center gap-2 mt-3 flex-wrap">
+                                        <p className="text-blue-100 text-sm font-medium">
+                                            {gameState.gameMode === 'timeAttack' ? '⏱️ Time Attack Mode!' :
+                                                gameState.gameMode === 't5' ? '⚡ T5 Cricket - 5 Overs!' :
+                                                    gameState.gameMode === 't10' ? '🔥 T10 Cricket - 10 Overs!' :
+                                                        gameState.gameMode === 't20' ? '🏆 T20 Cricket - 20 Overs!' :
+                                                            gameState.gameMode === 'multiplayer' ? `👥 ${gameState.playerName}'s Turn` :
+                                                                gameState.gameMode === 'tournament' ? '🏆 Tournament Match!' :
+                                                                    '🏫 Live Match in Progress! 📚'}
+                                        </p>
+                                        <div className="flex items-center gap-2 mt-3 flex-wrap">
                                         <span className="px-3 py-1 bg-gradient-to-r from-emerald-500 to-blue-500 rounded-full text-sm font-bold shadow-lg">
                                             {difficulties[gameState.difficulty].name}
                                         </span>
-                                                <span className="px-3 py-1 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-full text-sm font-bold shadow-lg">
+                                            <span className="px-3 py-1 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-full text-sm font-bold shadow-lg">
                                             🏆 {achievementCount}/16
                                         </span>
-                                                {gameState.gameMode === 'timeAttack' && gameState.startTime && (
-                                                    <span className="px-3 py-1 bg-gradient-to-r from-red-500 to-pink-500 rounded-full text-lg font-bold shadow-lg animate-pulse">
+                                            {gameState.gameMode === 'timeAttack' && gameState.startTime && (
+                                                <span className="px-3 py-1 bg-gradient-to-r from-red-500 to-pink-500 rounded-full text-lg font-bold shadow-lg animate-pulse">
                                                 ⏰ {Math.max(0, 120 - Math.floor((Date.now() - gameState.startTime) / 1000))}s
                                             </span>
-                                                )}
-                                                {['t5', 't10', 't20'].includes(gameState.gameMode) && (
-                                                    <span className="px-3 py-1 bg-gradient-to-r from-green-500 to-teal-500 rounded-full text-sm font-bold shadow-lg">
+                                            )}
+                                            {['t5', 't10', 't20'].includes(gameState.gameMode) && (
+                                                <span className="px-3 py-1 bg-gradient-to-r from-green-500 to-teal-500 rounded-full text-sm font-bold shadow-lg">
                                                 {gameState.gameMode === 't5' ? `⚡ ${Math.floor(gameState.ballsFaced / 6)}.${gameState.ballsFaced % 6}/5.0` :
                                                     gameState.gameMode === 't10' ? `🔥 ${Math.floor(gameState.ballsFaced / 6)}.${gameState.ballsFaced % 6}/10.0` :
                                                         `🏆 ${Math.floor(gameState.ballsFaced / 6)}.${gameState.ballsFaced % 6}/20.0`} Overs
                                             </span>
-                                                )}
-                                            </div>
+                                            )}
+                                        </div>
 
-                                            {/* Weather Display - MOVED INSIDE HEADER */}
-                                            <div className="mt-3 bg-white bg-opacity-20 rounded-lg p-2 backdrop-blur-sm">
-                                                <div className="flex items-center justify-between text-sm">
-                                                    <div className="flex items-center gap-2">
-                                                        <span className="text-2xl">{weatherTypes[weatherSystem.current].icon}</span>
-                                                        <span className="font-bold">{weatherTypes[weatherSystem.current].name}</span>
-                                                    </div>
-                                                    <div className="text-xs">
-                                                        Score: ×{weatherTypes[weatherSystem.current].scoreMultiplier}
-                                                    </div>
+                                        {/* Weather Display - MOVED INSIDE HEADER */}
+                                        <div className="mt-3 bg-white bg-opacity-20 rounded-lg p-2 backdrop-blur-sm">
+                                            <div className="flex items-center justify-between text-sm">
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-2xl">{weatherTypes[weatherSystem.current].icon}</span>
+                                                    <span className="font-bold">{weatherTypes[weatherSystem.current].name}</span>
                                                 </div>
-                                            </div>
-
-                                            {/* XP Display - MOVED INSIDE HEADER */}
-                                            <div className="mt-2 bg-white bg-opacity-20 rounded-lg p-2 backdrop-blur-sm">
-                                                <div className="flex justify-between items-center text-xs">
-                                                    <span>Level {progressionSystem.level}</span>
-                                                    <span>XP: {progressionSystem.xp}</span>
-                                                    <span>SP: {progressionSystem.skillPoints}</span>
-                                                </div>
-                                                <div className="mt-1 bg-white bg-opacity-30 rounded-full h-1">
-                                                    <div
-                                                        className="bg-yellow-400 h-1 rounded-full transition-all duration-500"
-                                                        style={{ width: `${((progressionSystem.xp % 100) / 100) * 100}%` }}
-                                                    ></div>
+                                                <div className="text-xs">
+                                                    Score: ×{weatherTypes[weatherSystem.current].scoreMultiplier}
                                                 </div>
                                             </div>
                                         </div>
-                                        <div className="flex flex-col gap-2">
-                                            <button
-                                                onClick={goToHome}
-                                                className="p-2 bg-white bg-opacity-20 rounded-full hover:bg-opacity-30 transition-all transform hover:scale-110 backdrop-blur-sm"
-                                            >
-                                                <ArrowLeft className="w-4 h-4" />
-                                            </button>
-                                            <button
-                                                onClick={() => setShowStats(true)}
-                                                className="p-2 bg-white bg-opacity-20 rounded-full hover:bg-opacity-30 transition-all transform hover:scale-110 backdrop-blur-sm"
-                                            >
-                                                <BarChart3 className="w-4 h-4" />
-                                            </button>
+
+                                        {/* XP Display - MOVED INSIDE HEADER */}
+                                        <div className="mt-2 bg-white bg-opacity-20 rounded-lg p-2 backdrop-blur-sm">
+                                            <div className="flex justify-between items-center text-xs">
+                                                <span>Level {progressionSystem.level}</span>
+                                                <span>XP: {progressionSystem.xp}</span>
+                                                <span>SP: {progressionSystem.skillPoints}</span>
+                                            </div>
+                                            <div className="mt-1 bg-white bg-opacity-30 rounded-full h-1">
+                                                <div
+                                                    className="bg-yellow-400 h-1 rounded-full transition-all duration-500"
+                                                    style={{ width: `${((progressionSystem.xp % 100) / 100) * 100}%` }}
+                                                ></div>
+                                            </div>
                                         </div>
+                                    </div>
+                                    <div className="flex flex-col gap-2">
+                                        <button
+                                            onClick={goToHome}
+                                            className="p-2 bg-white bg-opacity-20 rounded-full hover:bg-opacity-30 transition-all transform hover:scale-110 backdrop-blur-sm"
+                                        >
+                                            <ArrowLeft className="w-4 h-4" />
+                                        </button>
+                                        <button
+                                            onClick={() => setShowStats(true)}
+                                            className="p-2 bg-white bg-opacity-20 rounded-full hover:bg-opacity-30 transition-all transform hover:scale-110 backdrop-blur-sm"
+                                        >
+                                            <BarChart3 className="w-4 h-4" />
+                                        </button>
                                     </div>
                                 </div>
                             </div>
+                        </div>
 
-                            {/* Enhanced Score Display */}
-                            <div className="p-6 bg-gradient-to-b from-white to-blue-50">
-                                <div className="text-center mb-6">
-                                    <div className="text-5xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-3">
-                                        {gameState.score}/{gameState.wickets}
-                                    </div>
-                                    <div className="text-sm text-gray-600 space-y-2">
-                                        <div className="flex justify-center gap-2 flex-wrap">
+                        {/* Enhanced Score Display */}
+                        <div className="p-6 bg-gradient-to-b from-white to-blue-50">
+                            <div className="text-center mb-6">
+                                <div className="text-5xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-3">
+                                    {gameState.score}/{gameState.wickets}
+                                </div>
+                                <div className="text-sm text-gray-600 space-y-2">
+                                    <div className="flex justify-center gap-2 flex-wrap">
                                     <span className="bg-blue-100 px-2 py-1 rounded-full font-semibold text-xs">
                                         🎾 {Math.floor(gameState.ballsFaced / 6)}.{gameState.ballsFaced % 6}
                                     </span>
-                                            <span className="bg-orange-100 px-2 py-1 rounded-full font-semibold text-xs">🔥 {gameState.streak}</span>
-                                            <span className="bg-green-100 px-2 py-1 rounded-full font-semibold text-xs">🏆 {gameState.maxStreak}</span>
-                                            <span className="bg-purple-100 px-2 py-1 rounded-full font-semibold text-xs">💯 {userStats.highestScore}</span>
-                                        </div>
-                                        {gameState.gameMode === 'chase' && gameState.targetScore && (
-                                            <div className="bg-gradient-to-r from-red-500 to-red-700 text-yellow-200 font-bold text-lg rounded-lg p-3 mt-2 shadow-lg border-2 border-yellow-400">
-                                                🎯 TARGET: {gameState.targetScore} | NEED: {Math.max(0, gameState.targetScore - gameState.score + 1)} runs
-                                            </div>
-                                        )}
+                                        <span className="bg-orange-100 px-2 py-1 rounded-full font-semibold text-xs">🔥 {gameState.streak}</span>
+                                        <span className="bg-green-100 px-2 py-1 rounded-full font-semibold text-xs">🏆 {gameState.maxStreak}</span>
+                                        <span className="bg-purple-100 px-2 py-1 rounded-full font-semibold text-xs">💯 {userStats.highestScore}</span>
                                     </div>
-                                </div>
-
-                                {/* Commentary Box */}
-                                {commentarySystem.currentComment && (
-                                    <div className="mb-4 p-3 bg-gradient-to-r from-blue-100 to-purple-100 rounded-lg border-l-4 border-blue-500">
-                                        <div className="text-sm font-bold text-blue-800 flex items-center gap-2">
-                                            <span className="text-lg">🎙️</span>
-                                            Commentary
+                                    {gameState.gameMode === 'chase' && gameState.targetScore && (
+                                        <div className="bg-gradient-to-r from-red-500 to-red-700 text-yellow-200 font-bold text-lg rounded-lg p-3 mt-2 shadow-lg border-2 border-yellow-400">
+                                            🎯 TARGET: {gameState.targetScore} | NEED: {Math.max(0, gameState.targetScore - gameState.score + 1)} runs
                                         </div>
-                                        <div className="text-blue-700 mt-1">{commentarySystem.currentComment}</div>
-                                    </div>
-                                )}
-
-                                {/* Power-ups Display */}
-                                {(Object.values(gameState.powerUps).some(count => count > 0) || gameState.activePowerUp) && (
-                                    <div className="bg-gradient-to-r from-purple-100 to-pink-100 rounded-2xl p-4 mb-6 border-2 border-purple-300">
-                                        <h4 className="font-bold text-purple-800 mb-3 text-center">🎁 Power-ups</h4>
-                                        <div className="grid grid-cols-3 gap-2">
-                                            {Object.entries(enhancedPowerUps).map(([key, powerUp]) => (
-                                                <button
-                                                    key={key}
-                                                    onClick={() => activatePowerUp(key)}
-                                                    disabled={gameState.powerUps[key] <= 0 || gameState.activePowerUp || gameState.isGameOver}
-                                                    className={`p-2 rounded-lg text-center transition-all transform hover:scale-105 ${
-                                                        gameState.activePowerUp === key ? 'bg-yellow-300 text-yellow-800 animate-pulse border-2 border-yellow-500' :
-                                                            gameState.powerUps[key] > 0 ? 'bg-white text-purple-700 hover:bg-purple-50 shadow-md cursor-pointer border-2 border-purple-200' :
-                                                                'bg-gray-200 text-gray-500 cursor-not-allowed opacity-50 border-2 border-gray-300'
-                                                    }`}
-                                                >
-                                                    <div className="text-lg">{powerUp.icon}</div>
-                                                    <div className="text-xs font-bold">{gameState.powerUps[key] || 0}</div>
-                                                    {gameState.activePowerUp === key && <div className="text-xs text-yellow-700">ACTIVE</div>}
-                                                    {key === 'doubleRuns' && gameState.activePowerUp === 'doubleRuns' && (
-                                                        <div className="text-xs text-yellow-700">{gameState.doubleRunsRemaining || 3} left</div>
-                                                    )}
-                                                </button>
-                                            ))}
-                                        </div>
-                                        {gameState.activePowerUp && (
-                                            <div className="text-center mt-2 text-sm text-purple-700 font-bold">
-                                                ✨ {enhancedPowerUps[gameState.activePowerUp]?.name} is active! ✨
-                                            </div>
-                                        )}
-
-                                        {/* Power-up Suggestions */}
-                                        {suggestPowerUp(gameState, weatherSystem.current) && (
-                                            <div className="mt-2 p-2 bg-yellow-100 rounded-lg border border-yellow-300">
-                                                <div className="text-xs text-yellow-800 text-center">
-                                                    💡 {suggestPowerUp(gameState, weatherSystem.current).reason}
-                                                </div>
-                                            </div>
-                                        )}
-                                    </div>
-                                )}
-
-                                {/* Enhanced Current Page Display */}
-                                <div className={`bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500 rounded-3xl p-6 mb-6 shadow-xl border-4 border-white transform transition-all duration-700 page-flip-3d ${
-                                    isAnimating ? 'scale-110 rotate-3 shadow-2xl flipping' : 'scale-100 rotate-0'
-                                }`}>
-                                    <div className="text-center text-white">
-                                        <div className="text-lg font-bold mb-2 opacity-90">📖 Current Page</div>
-                                        <div className={`text-5xl font-bold mb-3 transition-all duration-700 ${
-                                            isAnimating ? 'scale-150 text-yellow-300' : 'scale-100'
-                                        }`}>
-                                            {gameState.currentPage || '---'}
-                                        </div>
-                                        {gameState.lastDigit !== null && (
-                                            <div className="text-sm opacity-90">
-                                                Last digit: <span className="font-bold text-2xl text-yellow-300 bg-black bg-opacity-20 px-2 py-1 rounded-full">{gameState.lastDigit}</span>
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-
-                                {/* Enhanced Celebration */}
-                                {celebration && (
-                                    <div className="text-center mb-6">
-                                        <div className="text-2xl font-bold text-transparent bg-gradient-to-r from-red-500 via-yellow-500 to-green-500 bg-clip-text animate-bounce">
-                                            {celebration}
-                                        </div>
-                                        <div className="text-sm text-gray-600 mt-1 animate-pulse">
-                                            {audioEnabled ? '🔊 Cricket atmosphere active' : '🔇 Enable audio for cricket sounds'}
-                                        </div>
-                                    </div>
-                                )}
-
-                                {/* Enhanced Turn Page Button */}
-                                <button
-                                    onClick={turnPage}
-                                    disabled={gameState.isGameOver || isAnimating}
-                                    className={`w-full py-5 rounded-3xl font-bold text-xl transition-all duration-300 transform shadow-2xl relative overflow-hidden ${
-                                        gameState.isGameOver || isAnimating
-                                            ? 'bg-gray-400 text-gray-600 cursor-not-allowed'
-                                            : 'bg-gradient-to-r from-green-500 via-blue-500 to-purple-500 text-white hover:from-green-600 hover:via-blue-600 hover:to-purple-600 hover:scale-105 active:scale-95'
-                                    } ${isAnimating ? 'animate-pulse' : ''}`}
-                                >
-                                    <div className="relative z-10">
-                                        {gameState.isGameOver ? '🏁 Game Complete!' : isAnimating ? '📖 Turning Page...' : '📖 Turn the Page'}
-                                    </div>
-                                    {!gameState.isGameOver && !isAnimating && (
-                                        <div className="absolute inset-0 bg-gradient-to-r from-yellow-400 to-orange-400 opacity-0 hover:opacity-20 transition-opacity duration-300"></div>
                                     )}
-                                </button>
+                                </div>
+                            </div>
 
-                                {/* Enhanced Recent Runs */}
-                                {gameState.runs.length > 0 && (
-                                    <div className="mt-6 p-5 bg-gradient-to-r from-gray-100 to-blue-100 rounded-3xl shadow-lg border-2 border-blue-200">
-                                        <h3 className="font-bold text-gray-700 mb-3 text-lg flex items-center gap-2">
-                                            📊 Recent Performance
-                                            <span className="text-sm bg-blue-500 text-white px-2 py-1 rounded-full">
+                            {/* Commentary Box */}
+                            {commentarySystem.currentComment && (
+                                <div className="mb-4 p-3 bg-gradient-to-r from-blue-100 to-purple-100 rounded-lg border-l-4 border-blue-500">
+                                    <div className="text-sm font-bold text-blue-800 flex items-center gap-2">
+                                        <span className="text-lg">🎙️</span>
+                                        Commentary
+                                    </div>
+                                    <div className="text-blue-700 mt-1">{commentarySystem.currentComment}</div>
+                                </div>
+                            )}
+
+                            {/* Power-ups Display */}
+                            {(Object.values(gameState.powerUps).some(count => count > 0) || gameState.activePowerUp) && (
+                                <div className="bg-gradient-to-r from-purple-100 to-pink-100 rounded-2xl p-4 mb-6 border-2 border-purple-300">
+                                    <h4 className="font-bold text-purple-800 mb-3 text-center">🎁 Power-ups</h4>
+                                    <div className="grid grid-cols-3 gap-2">
+                                        {Object.entries(enhancedPowerUps).map(([key, powerUp]) => (
+                                            <button
+                                                key={key}
+                                                onClick={() => activatePowerUp(key)}
+                                                disabled={gameState.powerUps[key] <= 0 || gameState.activePowerUp || gameState.isGameOver}
+                                                className={`p-2 rounded-lg text-center transition-all transform hover:scale-105 ${
+                                                    gameState.activePowerUp === key ? 'bg-yellow-300 text-yellow-800 animate-pulse border-2 border-yellow-500' :
+                                                        gameState.powerUps[key] > 0 ? 'bg-white text-purple-700 hover:bg-purple-50 shadow-md cursor-pointer border-2 border-purple-200' :
+                                                            'bg-gray-200 text-gray-500 cursor-not-allowed opacity-50 border-2 border-gray-300'
+                                                }`}
+                                            >
+                                                <div className="text-lg">{powerUp.icon}</div>
+                                                <div className="text-xs font-bold">{gameState.powerUps[key] || 0}</div>
+                                                {gameState.activePowerUp === key && <div className="text-xs text-yellow-700">ACTIVE</div>}
+                                                {key === 'doubleRuns' && gameState.activePowerUp === 'doubleRuns' && (
+                                                    <div className="text-xs text-yellow-700">{gameState.doubleRunsRemaining || 3} left</div>
+                                                )}
+                                            </button>
+                                        ))}
+                                    </div>
+                                    {gameState.activePowerUp && (
+                                        <div className="text-center mt-2 text-sm text-purple-700 font-bold">
+                                            ✨ {enhancedPowerUps[gameState.activePowerUp]?.name} is active! ✨
+                                        </div>
+                                    )}
+
+                                    {/* Power-up Suggestions */}
+                                    {suggestPowerUp(gameState, weatherSystem.current) && (
+                                        <div className="mt-2 p-2 bg-yellow-100 rounded-lg border border-yellow-300">
+                                            <div className="text-xs text-yellow-800 text-center">
+                                                💡 {suggestPowerUp(gameState, weatherSystem.current).reason}
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
+                            {/* Enhanced Current Page Display */}
+                            <div className={`bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500 rounded-3xl p-6 mb-6 shadow-xl border-4 border-white transform transition-all duration-700 page-flip-3d ${
+                                isAnimating ? 'scale-110 rotate-3 shadow-2xl flipping' : 'scale-100 rotate-0'
+                            }`}>
+                                <div className="text-center text-white">
+                                    <div className="text-lg font-bold mb-2 opacity-90">📖 Current Page</div>
+                                    <div className={`text-5xl font-bold mb-3 transition-all duration-700 ${
+                                        isAnimating ? 'scale-150 text-yellow-300' : 'scale-100'
+                                    }`}>
+                                        {gameState.currentPage || '---'}
+                                    </div>
+                                    {gameState.lastDigit !== null && (
+                                        <div className="text-sm opacity-90">
+                                            Last digit: <span className="font-bold text-2xl text-yellow-300 bg-black bg-opacity-20 px-2 py-1 rounded-full">{gameState.lastDigit}</span>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Enhanced Celebration */}
+                            {celebration && (
+                                <div className="text-center mb-6">
+                                    <div className="text-2xl font-bold text-transparent bg-gradient-to-r from-red-500 via-yellow-500 to-green-500 bg-clip-text animate-bounce">
+                                        {celebration}
+                                    </div>
+                                    <div className="text-sm text-gray-600 mt-1 animate-pulse">
+                                        {audioEnabled ? '🔊 Cricket atmosphere active' : '🔇 Enable audio for cricket sounds'}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Enhanced Turn Page Button */}
+                            <button
+                                onClick={turnPage}
+                                disabled={gameState.isGameOver || isAnimating}
+                                className={`w-full py-5 rounded-3xl font-bold text-xl transition-all duration-300 transform shadow-2xl relative overflow-hidden ${
+                                    gameState.isGameOver || isAnimating
+                                        ? 'bg-gray-400 text-gray-600 cursor-not-allowed'
+                                        : 'bg-gradient-to-r from-green-500 via-blue-500 to-purple-500 text-white hover:from-green-600 hover:via-blue-600 hover:to-purple-600 hover:scale-105 active:scale-95'
+                                } ${isAnimating ? 'animate-pulse' : ''}`}
+                            >
+                                <div className="relative z-10">
+                                    {gameState.isGameOver ? '🏁 Game Complete!' : isAnimating ? '📖 Turning Page...' : '📖 Turn the Page'}
+                                </div>
+                                {!gameState.isGameOver && !isAnimating && (
+                                    <div className="absolute inset-0 bg-gradient-to-r from-yellow-400 to-orange-400 opacity-0 hover:opacity-20 transition-opacity duration-300"></div>
+                                )}
+                            </button>
+
+                            {/* Enhanced Recent Runs */}
+                            {gameState.runs.length > 0 && (
+                                <div className="mt-6 p-5 bg-gradient-to-r from-gray-100 to-blue-100 rounded-3xl shadow-lg border-2 border-blue-200">
+                                    <h3 className="font-bold text-gray-700 mb-3 text-lg flex items-center gap-2">
+                                        📊 Recent Performance
+                                        <span className="text-sm bg-blue-500 text-white px-2 py-1 rounded-full">
                                         Last {Math.min(12, gameState.runs.length)}
                                     </span>
-                                        </h3>
-                                        <div className="flex flex-wrap gap-2">
-                                            {gameState.runs.slice(-12).map((run, index) => (
-                                                <span
-                                                    key={index}
-                                                    className={`px-3 py-2 rounded-full text-sm font-bold shadow-md transform hover:scale-110 transition-all cursor-default ${
-                                                        run.isOut
-                                                            ? 'bg-gradient-to-r from-red-400 to-red-600 text-white animate-pulse'
-                                                            : run.runs >= 6
-                                                                ? 'bg-gradient-to-r from-purple-400 to-pink-500 text-white shadow-lg'
-                                                                : run.runs >= 4
-                                                                    ? 'bg-gradient-to-r from-green-400 to-emerald-500 text-white'
-                                                                    : run.runs >= 1
-                                                                        ? 'bg-gradient-to-r from-blue-400 to-cyan-500 text-white'
-                                                                        : 'bg-gradient-to-r from-gray-400 to-gray-500 text-white'
-                                                    }`}
-                                                    title={`Page: ${run.page}, ${run.isOut ? 'OUT' : run.runs === 0 ? 'Dot Ball' : run.runs + ' runs'}`}
-                                                >
+                                    </h3>
+                                    <div className="flex flex-wrap gap-2">
+                                        {gameState.runs.slice(-12).map((run, index) => (
+                                            <span
+                                                key={index}
+                                                className={`px-3 py-2 rounded-full text-sm font-bold shadow-md transform hover:scale-110 transition-all cursor-default ${
+                                                    run.isOut
+                                                        ? 'bg-gradient-to-r from-red-400 to-red-600 text-white animate-pulse'
+                                                        : run.runs >= 6
+                                                            ? 'bg-gradient-to-r from-purple-400 to-pink-500 text-white shadow-lg'
+                                                            : run.runs >= 4
+                                                                ? 'bg-gradient-to-r from-green-400 to-emerald-500 text-white'
+                                                                : run.runs >= 1
+                                                                    ? 'bg-gradient-to-r from-blue-400 to-cyan-500 text-white'
+                                                                    : 'bg-gradient-to-r from-gray-400 to-gray-500 text-white'
+                                                }`}
+                                                title={`Page: ${run.page}, ${run.isOut ? 'OUT' : run.runs === 0 ? 'Dot Ball' : run.runs + ' runs'}`}
+                                            >
                                             {run.isOut ? 'OUT' : run.runs === 0 ? '•' : run.runs}
                                         </span>
-                                            ))}
-                                        </div>
-                                        {gameState.runs.length > 0 && (
-                                            <div className="mt-3 text-xs text-gray-600 bg-white rounded-lg p-2">
-                                                <div className="flex justify-between">
-                                                    <span>Boundaries: {gameState.runs.filter(r => r.runs >= 4 && !r.isOut).length}</span>
-                                                    <span>Strike Rate: {Math.round((gameState.score / gameState.ballsFaced) * 100)}%</span>
-                                                    <span>Dots: {gameState.runs.filter(r => r.runs === 0 && !r.isOut).length}</span>
-                                                </div>
-                                            </div>
-                                        )}
+                                        ))}
                                     </div>
-                                )}
-                            </div>
+                                    {gameState.runs.length > 0 && (
+                                        <div className="mt-3 text-xs text-gray-600 bg-white rounded-lg p-2">
+                                            <div className="flex justify-between">
+                                                <span>Boundaries: {gameState.runs.filter(r => r.runs >= 4 && !r.isOut).length}</span>
+                                                <span>Strike Rate: {Math.round((gameState.score / gameState.ballsFaced) * 100)}%</span>
+                                                <span>Dots: {gameState.runs.filter(r => r.runs === 0 && !r.isOut).length}</span>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
                         </div>
                     </div>
-
-                    {/* Modals */}
-                    {showStats && <StatsModal />}
-                    {showAchievements && <AchievementsModal />}
-                    {showLeaderboard && <LeaderboardModal />}
-                    {showSettings && <SettingsModal />}
                 </div>
-            </>
-        );
 
-    };
+                {/* Modals */}
+                {showStats && <StatsModal />}
+                {showAchievements && <AchievementsModal />}
+                {showLeaderboard && <LeaderboardModal />}
+                {showSettings && <SettingsModal />}
+            </div>
+        </>
+    );
 
-    export default BookCricket;
+};
+
+export default BookCricket;
