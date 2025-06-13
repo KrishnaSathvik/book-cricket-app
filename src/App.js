@@ -69,15 +69,14 @@ const BookCricket = () => {
     10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
   }
   
-  .page-flip-3d {
+.page-flip-3d {
     transform-style: preserve-3d;
     transition: transform 0.8s ease-in-out;
-  }
-  
-  .page-flip-3d.flipping {
-    transform: rotateY(180deg);
-  }
-`;
+}
+
+.page-flip-3d.flipping {
+    transform: rotateY(360deg);
+}
 
     // Enhanced game state
     const [gameState, setGameState] = useState({
