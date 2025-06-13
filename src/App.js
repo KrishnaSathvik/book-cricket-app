@@ -756,7 +756,7 @@ const BookCricket = () => {
         setUserStats(prev => ({ ...prev, powerUpsUsed: prev.powerUpsUsed + 1 }));
 
         // Show power-up activation message
-        setCelebration(`🎁 ${enhancedPowerUps[powerUpType].name} ACTIVATED! 🎁`);
+        setCelebration(` ${enhancedPowerUps[powerUpType].name} ACTIVATED! `);
         setTimeout(() => setCelebration(''), 2000);
     };
 
@@ -856,7 +856,7 @@ const BookCricket = () => {
 
             if (skillPointsGained > 0) {
                 addCommentary(`Level Up! You are now level ${newLevel}!`);
-                setCelebration(`🎉 LEVEL ${newLevel}! +${skillPointsGained} Skill Points! 🎉`);
+                setCelebration(` LEVEL ${newLevel}! +${skillPointsGained} Skill Points! `);
             }
 
             return {
@@ -874,22 +874,53 @@ const BookCricket = () => {
         return bat.bonus + gloves.bonus + helmet.bonus;
     };
 
-    const getContextualCommentary = (runs, isOut, gameState) => {
-        const weather = weatherSystem.current;
-        let commentary = '';
+    const getContextualCommentary = (runs, isOut, gameState, lastDigit) => {
+    const weather = weatherSystem.current;
+    let commentary = '';
 
-        if (isOut) {
-            commentary = commentaryTemplates.wicket[Math.floor(Math.random() * commentaryTemplates.wicket.length)];
-            if (weather === 'rainy') commentary += " The conditions finally got to the batsman!";
-        } else if (runs === 6) {
-            commentary = commentaryTemplates.six[Math.floor(Math.random() * commentaryTemplates.six.length)];
-            if (weather === 'windy') commentary += " Despite the swirling wind!";
-        } else if (runs === 4) {
-            commentary = commentaryTemplates.four[Math.floor(Math.random() * commentaryTemplates.four.length)];
-        }
+    if (isOut) {
+        // Different out messages based on the digit
+        const outMessages = [
+            "GONE! What a delivery!",
+            "OUT! The batsman is dismissed!",
+            "Wicket! That's the end of the innings!",
+            "BOWLED! The stumps are rattled!"
+        ];
+        commentary = outMessages[Math.floor(Math.random() * outMessages.length)];
+        
+        if (weather === 'rainy') commentary += " The wet conditions made it difficult!";
+        if (weather === 'windy') commentary += " The wind played its part!";
+    } else if (runs === 6) {
+        const sixMessages = [
+            "MASSIVE SIX! That's gone into the stands!",
+            "What a shot! Clean as a whistle!",
+            "SIX! The crowd is on their feet!",
+            "Incredible power! That ball has disappeared!"
+        ];
+        commentary = sixMessages[Math.floor(Math.random() * sixMessages.length)];
+        if (weather === 'windy') commentary += " Despite the swirling wind!";
+    } else if (runs === 4) {
+        const fourMessages = [
+            "Beautiful four! Timing and placement!",
+            "Cracking shot to the boundary!",
+            "Four runs! Perfect execution!",
+            "Brilliant stroke play!"
+        ];
+        commentary = fourMessages[Math.floor(Math.random() * fourMessages.length)];
+    } else if (runs === 0) {
+        const dotMessages = [
+            "Dot ball! Good defensive play!",
+            "No run there, solid bowling!",
+            "Watchful batting, no score!",
+            "Well bowled, no runs conceded!"
+        ];
+        commentary = dotMessages[Math.floor(Math.random() * dotMessages.length)];
+    } else {
+        commentary = `${runs} run${runs > 1 ? 's' : ''}! Good running between the wickets!`;
+    }
 
-        return commentary;
-    };
+    return commentary;
+};
 
     // Visual Effects System - add after commentary
     const triggerVisualEffect = (type, intensity = 1.0) => {
@@ -903,7 +934,7 @@ const BookCricket = () => {
                 break;
             case 'four':
                 // Trigger sparkles
-                setCelebration('✨ BOUNDARY! SPARKLING SHOT! ✨');
+                setCelebration(' BOUNDARY! SPARKLING SHOT! ');
                 break;
             case 'wicket':
                 // Screen shake effect
@@ -955,9 +986,7 @@ const BookCricket = () => {
         const finalRuns = Math.round(baseRuns * weatherMultiplier * (1 + equipmentBonus));
 
         // Generate contextual commentary
-        const commentary = getContextualCommentary(finalRuns, scoreResult.isOut, gameState);
-        if (commentary) addCommentary(commentary);
-
+        const commentary = getContextualCommentary(finalRuns, scoreResult.isOut, gameState, lastDigit);
         // Enhanced audio and visual effects
         playEnhancedSound('hit', finalRuns, scoreResult.isOut);
         triggerVisualEffect(scoreResult.isOut ? 'wicket' : finalRuns >= 6 ? 'six' : finalRuns >= 4 ? 'four' : 'normal');
@@ -975,7 +1004,7 @@ const BookCricket = () => {
         // Show power-up suggestions
         const suggestion = suggestPowerUp(gameState, weather);
         if (suggestion && gameState.powerUps[suggestion.powerUp] > 0) {
-            setCelebration(`💡 Suggestion: Use ${suggestion.powerUp}! ${suggestion.reason}`);
+            setCelebration(` Suggestion: Use ${suggestion.powerUp}! ${suggestion.reason}`);
         }
 
         // Calculate game state updates
@@ -1029,21 +1058,21 @@ const BookCricket = () => {
             const powerUpTypes = Object.keys(enhancedPowerUps);
             const randomPowerUp = powerUpTypes[Math.floor(Math.random() * powerUpTypes.length)];
             newPowerUps[randomPowerUp] += 1;
-            setCelebration(`🎁 POWER-UP EARNED: ${enhancedPowerUps[randomPowerUp].name}! 🎁`);
+            setCelebration(` POWER-UP EARNED: ${enhancedPowerUps[randomPowerUp].name}! `);
             setTimeout(() => setCelebration(''), 2500);
         } else if (!gameState.activePowerUp || gameState.activePowerUp === 'luckyPage') {
             // Regular celebrations (only if no power-up celebration)
             if (scoreResult.runs === 6) {
-                setCelebration('🚀 MASSIVE SIX! GONE FOR MILES! 🚀');
+                setCelebration(' MASSIVE SIX! GONE FOR MILES! ');
                 setTimeout(() => setCelebration(''), 3500);
             } else if (scoreResult.runs === 4) {
-                setCelebration('⚡ CRACKING FOUR! BOUNDARY! ⚡');
+                setCelebration(' CRACKING FOUR! BOUNDARY! ');
                 setTimeout(() => setCelebration(''), 3000);
             } else if (scoreResult.isOut) {
-                setCelebration(scoreResult.powerUpUsed ? '❤️ EXTRA LIFE SAVED YOU! ❤️' : '🏏 CLEAN BOWLED! WHAT A DELIVERY! 🏏');
+                setCelebration(scoreResult.powerUpUsed ? 'EXTRA LIFE SAVED YOU! ' : 'CLEAN BOWLED! WHAT A DELIVERY! ');
                 setTimeout(() => setCelebration(''), 3000);
             } else if (doubleRunsUsed) {
-                setCelebration(`💫 DOUBLE RUNS! ${scoreResult.runs} → ${scoreResult.runs * 2}! 💫`);
+                setCelebration(` DOUBLE RUNS! ${scoreResult.runs} → ${scoreResult.runs * 2}! `);
                 setTimeout(() => setCelebration(''), 2500);
             }
         }
