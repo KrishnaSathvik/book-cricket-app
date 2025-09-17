@@ -1,0 +1,144 @@
+/* Modern Mobile-First Loading Spinner Component */
+
+.spinner-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+}
+
+.spinner {
+  border: 3px solid transparent;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+/* Spinner Sizes */
+.spinner-sm {
+  width: 20px;
+  height: 20px;
+  border-width: 2px;
+}
+
+.spinner-md {
+  width: 32px;
+  height: 32px;
+  border-width: 3px;
+}
+
+.spinner-lg {
+  width: 48px;
+  height: 48px;
+  border-width: 4px;
+}
+
+.spinner-xl {
+  width: 64px;
+  height: 64px;
+  border-width: 5px;
+}
+
+/* Spinner Colors */
+.spinner-primary {
+  border-top-color: var(--primary-500);
+  border-right-color: var(--primary-200);
+}
+
+.spinner-secondary {
+  border-top-color: var(--secondary-500);
+  border-right-color: var(--secondary-200);
+}
+
+.spinner-success {
+  border-top-color: var(--success-500);
+  border-right-color: var(--success-200);
+}
+
+.spinner-warning {
+  border-top-color: var(--warning-500);
+  border-right-color: var(--warning-200);
+}
+
+.spinner-error {
+  border-top-color: var(--error-500);
+  border-right-color: var(--error-200);
+}
+
+.spinner-white {
+  border-top-color: white;
+  border-right-color: rgba(255, 255, 255, 0.3);
+}
+
+.spinner-gray {
+  border-top-color: var(--neutral-500);
+  border-right-color: var(--neutral-200);
+}
+
+/* Spinner Text */
+.spinner-text {
+  font-size: var(--font-sm);
+  color: var(--neutral-600);
+  text-align: center;
+  font-weight: 500;
+}
+
+/* Spinner Animation */
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+  .spinner-text {
+    color: var(--neutral-400);
+  }
+  
+  .spinner-primary {
+    border-right-color: var(--primary-800);
+  }
+  
+  .spinner-secondary {
+    border-right-color: var(--secondary-800);
+  }
+  
+  .spinner-success {
+    border-right-color: var(--success-800);
+  }
+  
+  .spinner-warning {
+    border-right-color: var(--warning-800);
+  }
+  
+  .spinner-error {
+    border-right-color: var(--error-800);
+  }
+  
+  .spinner-gray {
+    border-right-color: var(--neutral-700);
+  }
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  .spinner {
+    animation: none;
+  }
+  
+  .spinner::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 4px;
+    height: 4px;
+    background: currentColor;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+  }
+}

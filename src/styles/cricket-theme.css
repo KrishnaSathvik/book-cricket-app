@@ -1,0 +1,369 @@
+/* Cricket-Themed Design System - Inspired by Real Cricket Games */
+
+:root {
+  /* Cricket Colors - Inspired by cricket grounds and equipment */
+  --cricket-green: #2d5016;        /* Cricket pitch green */
+  --cricket-green-light: #4a7c59;   /* Lighter pitch green */
+  --cricket-green-bright: #6b8e23;  /* Bright cricket green */
+  --cricket-brown: #8b4513;         /* Cricket bat brown */
+  --cricket-brown-light: #cd853f;   /* Light bat brown */
+  --cricket-red: #dc143c;            /* Cricket ball red */
+  --cricket-red-dark: #b22222;      /* Dark cricket red */
+  --cricket-white: #ffffff;          /* Cricket whites */
+  --cricket-cream: #f5f5dc;          /* Cricket cream */
+  --cricket-gold: #ffd700;           /* Trophy gold */
+  --cricket-silver: #c0c0c0;         /* Medal silver */
+  
+  /* Cricket Field Colors */
+  --field-green: #228b22;            /* Outfield green */
+  --field-green-dark: #006400;       /* Dark field green */
+  --field-brown: #8b4513;            /* Pitch brown */
+  --field-sand: #f4a460;             /* Sand/soil color */
+  
+  /* Score Colors */
+  --score-high: #ff6b35;             /* High score orange */
+  --score-medium: #4ecdc4;           /* Medium score teal */
+  --score-low: #45b7d1;              /* Low score blue */
+  --score-out: #e74c3c;              /* Out red */
+  
+  /* Cricket Typography */
+  --cricket-font-primary: 'Arial', 'Helvetica', sans-serif;
+  --cricket-font-score: 'Courier New', monospace;
+  --cricket-font-bold: 'Arial Black', 'Arial', sans-serif;
+}
+
+/* Cricket Field Background */
+.cricket-field-bg {
+  background: 
+    radial-gradient(ellipse at center, var(--field-green) 0%, var(--field-green-dark) 100%),
+    linear-gradient(45deg, var(--field-green-dark) 0%, var(--field-green) 50%, var(--field-green-dark) 100%);
+  background-size: 100% 100%, 20px 20px;
+  position: relative;
+}
+
+.cricket-field-bg::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 200px;
+  height: 20px;
+  background: var(--field-brown);
+  transform: translate(-50%, -50%);
+  border-radius: 10px;
+  box-shadow: 0 0 20px rgba(0,0,0,0.3);
+}
+
+/* Cricket Score Display */
+.cricket-score {
+  background: linear-gradient(135deg, var(--cricket-green) 0%, var(--cricket-green-light) 100%);
+  border: 3px solid var(--cricket-brown);
+  border-radius: 15px;
+  color: var(--cricket-white);
+  font-family: var(--cricket-font-score);
+  font-weight: bold;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+  box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+}
+
+.cricket-score-main {
+  font-size: 3rem;
+  text-align: center;
+  margin: 0;
+  color: var(--cricket-gold);
+}
+
+.cricket-score-details {
+  font-size: 1rem;
+  text-align: center;
+  opacity: 0.9;
+}
+
+/* Cricket Button Styles */
+.cricket-btn {
+  background: linear-gradient(135deg, var(--cricket-brown) 0%, var(--cricket-brown-light) 100%);
+  border: 2px solid var(--cricket-brown-dark);
+  border-radius: 8px;
+  color: var(--cricket-white);
+  font-family: var(--cricket-font-primary);
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+  transition: all 0.3s ease;
+}
+
+.cricket-btn:hover {
+  background: linear-gradient(135deg, var(--cricket-brown-light) 0%, var(--cricket-brown) 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0,0,0,0.4);
+}
+
+.cricket-btn-primary {
+  background: linear-gradient(135deg, var(--cricket-green) 0%, var(--cricket-green-light) 100%);
+  border-color: var(--cricket-green-dark);
+}
+
+.cricket-btn-primary:hover {
+  background: linear-gradient(135deg, var(--cricket-green-light) 0%, var(--cricket-green-bright) 100%);
+}
+
+/* Cricket Card Styles */
+.cricket-card {
+  background: var(--cricket-white);
+  border: 2px solid var(--cricket-brown);
+  border-radius: 12px;
+  box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+  transition: all 0.3s ease;
+}
+
+.cricket-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+}
+
+.cricket-card-header {
+  background: linear-gradient(135deg, var(--cricket-green) 0%, var(--cricket-green-light) 100%);
+  color: var(--cricket-white);
+  padding: 1rem;
+  border-radius: 10px 10px 0 0;
+  font-weight: bold;
+  text-align: center;
+}
+
+/* Cricket Page Display */
+.cricket-page {
+  background: linear-gradient(135deg, var(--cricket-cream) 0%, var(--cricket-white) 100%);
+  border: 3px solid var(--cricket-brown);
+  border-radius: 20px;
+  color: var(--cricket-brown);
+  font-family: var(--cricket-font-score);
+  text-align: center;
+  box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+  position: relative;
+}
+
+.cricket-page::before {
+  content: '';
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  right: 10px;
+  bottom: 10px;
+  border: 1px solid var(--cricket-brown);
+  border-radius: 15px;
+  pointer-events: none;
+}
+
+.cricket-page-number {
+  font-size: 4rem;
+  font-weight: bold;
+  color: var(--cricket-brown);
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+  margin: 1rem 0;
+}
+
+.cricket-page-label {
+  font-size: 1.2rem;
+  color: var(--cricket-brown);
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+/* Cricket Animations */
+@keyframes cricket-bounce {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-10px);
+  }
+  60% {
+    transform: translateY(-5px);
+  }
+}
+
+@keyframes cricket-swing {
+  0% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(15deg);
+  }
+  75% {
+    transform: rotate(-15deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
+}
+
+@keyframes cricket-celebration {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+.cricket-bounce {
+  animation: cricket-bounce 1s ease-in-out;
+}
+
+.cricket-swing {
+  animation: cricket-swing 0.5s ease-in-out;
+}
+
+.cricket-celebration {
+  animation: cricket-celebration 0.6s ease-in-out;
+}
+
+/* Cricket Runs Display */
+.cricket-runs {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.cricket-run {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 1.2rem;
+  color: white;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+}
+
+.cricket-run.dot {
+  background: var(--cricket-brown);
+}
+
+.cricket-run.single {
+  background: var(--score-low);
+}
+
+.cricket-run.double {
+  background: var(--score-medium);
+}
+
+.cricket-run.triple {
+  background: var(--score-high);
+}
+
+.cricket-run.four {
+  background: var(--cricket-green);
+  box-shadow: 0 0 10px var(--cricket-green);
+}
+
+.cricket-run.six {
+  background: var(--cricket-gold);
+  box-shadow: 0 0 15px var(--cricket-gold);
+  animation: cricket-celebration 0.6s ease-in-out;
+}
+
+.cricket-run.out {
+  background: var(--score-out);
+  animation: cricket-bounce 0.8s ease-in-out;
+}
+
+/* Cricket Header */
+.cricket-header {
+  background: linear-gradient(135deg, var(--cricket-green) 0%, var(--cricket-green-dark) 100%);
+  color: var(--cricket-white);
+  padding: 1rem;
+  text-align: center;
+  border-bottom: 3px solid var(--cricket-brown);
+}
+
+.cricket-title {
+  font-size: 2rem;
+  font-weight: bold;
+  margin: 0;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+}
+
+.cricket-subtitle {
+  font-size: 1rem;
+  margin: 0.5rem 0 0 0;
+  opacity: 0.9;
+}
+
+/* Cricket Stats */
+.cricket-stats {
+  background: var(--cricket-cream);
+  border: 2px solid var(--cricket-brown);
+  border-radius: 10px;
+  padding: 1rem;
+  margin: 1rem 0;
+}
+
+.cricket-stat-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--cricket-brown);
+}
+
+.cricket-stat-item:last-child {
+  border-bottom: none;
+}
+
+.cricket-stat-label {
+  font-weight: bold;
+  color: var(--cricket-brown);
+}
+
+.cricket-stat-value {
+  font-family: var(--cricket-font-score);
+  font-weight: bold;
+  color: var(--cricket-green);
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .cricket-score-main {
+    font-size: 2.5rem;
+  }
+  
+  .cricket-page-number {
+    font-size: 3rem;
+  }
+  
+  .cricket-title {
+    font-size: 1.5rem;
+  }
+  
+  .cricket-run {
+    width: 35px;
+    height: 35px;
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .cricket-score-main {
+    font-size: 2rem;
+  }
+  
+  .cricket-page-number {
+    font-size: 2.5rem;
+  }
+  
+  .cricket-title {
+    font-size: 1.2rem;
+  }
+  
+  .cricket-run {
+    width: 30px;
+    height: 30px;
+    font-size: 0.9rem;
+  }
+}

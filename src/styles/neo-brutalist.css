@@ -1,0 +1,878 @@
+/* Neo-Brutalist Design System for Book Cricket Pro */
+
+/* Import Neo-Brutalist Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+/* Neo-Brutalist CSS Variables */
+:root {
+  /* Neo-Brutalist Color Palette - Bold & High Contrast */
+  --nb-black: #000000;
+  --nb-white: #FFFFFF;
+  --nb-yellow: #FFFF00;
+  --nb-orange: #FF6B35;
+  --nb-red: #FF0000;
+  --nb-green: #00FF00;
+  --nb-blue: #0066FF;
+  --nb-purple: #8B5CF6;
+  --nb-pink: #FF1493;
+  --nb-cyan: #00FFFF;
+  
+  /* Neo-Brutalist Grays */
+  --nb-gray-100: #F5F5F5;
+  --nb-gray-200: #E5E5E5;
+  --nb-gray-300: #D4D4D4;
+  --nb-gray-400: #A3A3A3;
+  --nb-gray-500: #737373;
+  --nb-gray-600: #525252;
+  --nb-gray-700: #404040;
+  --nb-gray-800: #262626;
+  --nb-gray-900: #171717;
+  
+  /* Cricket-Themed Neo-Brutalist Colors */
+  --nb-cricket-green: #00FF41;
+  --nb-cricket-brown: #8B4513;
+  --nb-cricket-red: #FF0040;
+  --nb-cricket-gold: #FFD700;
+  
+  /* Neo-Brutalist Typography */
+  --nb-font-primary: 'Space Grotesk', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --nb-font-mono: 'Space Grotesk', 'SF Mono', 'Monaco', monospace;
+  
+  /* Neo-Brutalist Font Sizes */
+  --nb-text-xs: 0.75rem;    /* 12px */
+  --nb-text-sm: 0.875rem;   /* 14px */
+  --nb-text-base: 1rem;      /* 16px */
+  --nb-text-lg: 1.125rem;   /* 18px */
+  --nb-text-xl: 1.25rem;    /* 20px */
+  --nb-text-2xl: 1.5rem;    /* 24px */
+  --nb-text-3xl: 1.875rem;  /* 30px */
+  --nb-text-4xl: 2.25rem;   /* 36px */
+  --nb-text-5xl: 3rem;      /* 48px */
+  --nb-text-6xl: 3.75rem;   /* 60px */
+  --nb-text-7xl: 4.5rem;    /* 72px */
+  
+  /* Neo-Brutalist Spacing - 8px grid */
+  --nb-space-1: 0.25rem;    /* 4px */
+  --nb-space-2: 0.5rem;     /* 8px */
+  --nb-space-3: 0.75rem;    /* 12px */
+  --nb-space-4: 1rem;       /* 16px */
+  --nb-space-5: 1.25rem;    /* 20px */
+  --nb-space-6: 1.5rem;     /* 24px */
+  --nb-space-8: 2rem;       /* 32px */
+  --nb-space-10: 2.5rem;    /* 40px */
+  --nb-space-12: 3rem;      /* 48px */
+  --nb-space-16: 4rem;      /* 64px */
+  --nb-space-20: 5rem;      /* 80px */
+  --nb-space-24: 6rem;      /* 96px */
+  
+  /* Neo-Brutalist Border Radius - Sharp & Angular */
+  --nb-radius-none: 0;
+  --nb-radius-sm: 0.25rem;   /* 4px */
+  --nb-radius-md: 0.5rem;    /* 8px */
+  --nb-radius-lg: 0.75rem;   /* 12px */
+  --nb-radius-xl: 1rem;      /* 16px */
+  --nb-radius-2xl: 1.5rem;   /* 24px */
+  --nb-radius-3xl: 2rem;     /* 32px */
+  
+  /* Neo-Brutalist Shadows - Bold & Dramatic */
+  --nb-shadow-sm: 2px 2px 0px var(--nb-black);
+  --nb-shadow-md: 4px 4px 0px var(--nb-black);
+  --nb-shadow-lg: 6px 6px 0px var(--nb-black);
+  --nb-shadow-xl: 8px 8px 0px var(--nb-black);
+  --nb-shadow-2xl: 12px 12px 0px var(--nb-black);
+  
+  /* Neo-Brutalist Transitions */
+  --nb-transition-fast: 100ms ease-out;
+  --nb-transition-normal: 200ms ease-out;
+  --nb-transition-slow: 300ms ease-out;
+  
+  /* Neo-Brutalist Touch Targets */
+  --nb-touch-target: 48px;
+  --nb-touch-target-lg: 64px;
+}
+
+/* Dark Mode Neo-Brutalist */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --nb-black: #FFFFFF;
+    --nb-white: #000000;
+    --nb-gray-100: #171717;
+    --nb-gray-200: #262626;
+    --nb-gray-300: #404040;
+    --nb-gray-400: #525252;
+    --nb-gray-500: #737373;
+    --nb-gray-600: #A3A3A3;
+    --nb-gray-700: #D4D4D4;
+    --nb-gray-800: #E5E5E5;
+    --nb-gray-900: #F5F5F5;
+  }
+}
+
+/* Base Neo-Brutalist Styles */
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: var(--nb-font-primary);
+  font-size: var(--nb-text-base);
+  font-weight: 500;
+  line-height: 1.4;
+  color: var(--nb-black);
+  background-color: var(--nb-white);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+/* Mobile Container */
+.nb-container {
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 0 var(--nb-space-4);
+  padding-bottom: calc(80px + env(safe-area-inset-bottom));
+}
+
+@media (max-width: 480px) {
+  .nb-container {
+    padding: 0 var(--nb-space-3);
+    padding-bottom: calc(80px + env(safe-area-inset-bottom));
+  }
+}
+
+/* Mobile Content Areas - Bottom Navigation */
+.home-content,
+.game-content,
+.performance-content,
+.how-to-play-content,
+.difficulty-content {
+  padding-bottom: calc(80px + env(safe-area-inset-bottom));
+}
+
+/* Desktop Container with Top Navigation */
+@media (min-width: 769px) {
+  .nb-container {
+    padding-top: calc(80px + env(safe-area-inset-top));
+    padding-bottom: var(--nb-space-4);
+  }
+  
+  /* Add padding to main content areas for desktop top nav */
+  .home-content,
+  .game-content,
+  .performance-content,
+  .how-to-play-content,
+  .difficulty-content {
+    padding-top: calc(80px + env(safe-area-inset-top));
+    padding-bottom: var(--nb-space-4);
+  }
+}
+
+/* Neo-Brutalist Button Styles */
+.nb-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--nb-space-2);
+  border: 3px solid var(--nb-black);
+  border-radius: var(--nb-radius-lg);
+  font-family: var(--nb-font-primary);
+  font-weight: 700;
+  font-size: var(--nb-text-base);
+  text-decoration: none;
+  cursor: pointer;
+  transition: all var(--nb-transition-fast);
+  position: relative;
+  overflow: hidden;
+  user-select: none;
+  min-height: var(--nb-touch-target);
+  padding: var(--nb-space-3) var(--nb-space-6);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.nb-btn-primary {
+  background: var(--nb-cricket-green);
+  color: var(--nb-black);
+  box-shadow: var(--nb-shadow-md);
+}
+
+.nb-btn-primary:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: var(--nb-shadow-lg);
+}
+
+.nb-btn-primary:active {
+  transform: translate(0px, 0px);
+  box-shadow: var(--nb-shadow-sm);
+}
+
+.nb-btn-secondary {
+  background: var(--nb-white);
+  color: var(--nb-black);
+  box-shadow: var(--nb-shadow-md);
+}
+
+.nb-btn-secondary:hover {
+  background: var(--nb-gray-100);
+  transform: translate(-2px, -2px);
+  box-shadow: var(--nb-shadow-lg);
+}
+
+.nb-btn-warning {
+  background: var(--nb-orange);
+  color: var(--nb-white);
+  box-shadow: var(--nb-shadow-md);
+}
+
+.nb-btn-error {
+  background: var(--nb-red);
+  color: var(--nb-white);
+  box-shadow: var(--nb-shadow-md);
+}
+
+.nb-btn-success {
+  background: var(--nb-cricket-green);
+  color: var(--nb-black);
+  box-shadow: var(--nb-shadow-md);
+}
+
+.nb-btn-lg {
+  min-height: var(--nb-touch-target-lg);
+  padding: var(--nb-space-4) var(--nb-space-8);
+  font-size: var(--nb-text-lg);
+  border-width: 4px;
+}
+
+.nb-btn-xl {
+  min-height: 72px;
+  padding: var(--nb-space-5) var(--nb-space-10);
+  font-size: var(--nb-text-xl);
+  border-width: 5px;
+}
+
+.nb-btn-full {
+  width: 100%;
+}
+
+.nb-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: var(--nb-shadow-sm);
+}
+
+/* Neo-Brutalist Card Styles */
+.nb-card {
+  background: var(--nb-white);
+  border: 4px solid var(--nb-black);
+  border-radius: var(--nb-radius-xl);
+  box-shadow: var(--nb-shadow-lg);
+  transition: all var(--nb-transition-normal);
+  overflow: hidden;
+  position: relative;
+}
+
+.nb-card:hover {
+  transform: translate(-4px, -4px);
+  box-shadow: var(--nb-shadow-xl);
+}
+
+.nb-card-interactive {
+  cursor: pointer;
+}
+
+.nb-card-interactive:active {
+  transform: translate(0px, 0px);
+  box-shadow: var(--nb-shadow-md);
+}
+
+/* Neo-Brutalist Score Display */
+.nb-score {
+  background: var(--nb-cricket-green);
+  border: 6px solid var(--nb-black);
+  border-radius: var(--nb-radius-2xl);
+  padding: var(--nb-space-8);
+  text-align: center;
+  box-shadow: var(--nb-shadow-xl);
+  margin: var(--nb-space-6) 0;
+  position: relative;
+}
+
+.nb-score-main {
+  font-size: var(--nb-text-7xl);
+  font-weight: 900;
+  line-height: 0.9;
+  margin: 0 0 var(--nb-space-4) 0;
+  color: var(--nb-black);
+  font-family: var(--nb-font-mono);
+  text-shadow: 4px 4px 0px var(--nb-white);
+}
+
+.nb-score-details {
+  font-size: var(--nb-text-lg);
+  font-weight: 700;
+  color: var(--nb-black);
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* Neo-Brutalist Page Display */
+.nb-page {
+  background: var(--nb-white);
+  border: 6px solid var(--nb-black);
+  border-radius: var(--nb-radius-3xl);
+  padding: var(--nb-space-10);
+  text-align: center;
+  box-shadow: var(--nb-shadow-xl);
+  margin: var(--nb-space-6) 0;
+  position: relative;
+}
+
+.nb-page-number {
+  font-size: var(--nb-text-7xl);
+  font-weight: 900;
+  line-height: 0.9;
+  margin: var(--nb-space-6) 0;
+  color: var(--nb-black);
+  font-family: var(--nb-font-mono);
+  text-shadow: 4px 4px 0px var(--nb-cricket-green);
+}
+
+.nb-page-label {
+  font-size: var(--nb-text-xl);
+  font-weight: 800;
+  color: var(--nb-black);
+  margin: 0 0 var(--nb-space-6) 0;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+/* Neo-Brutalist Typography */
+.nb-title {
+  font-size: var(--nb-text-5xl);
+  font-weight: 900;
+  line-height: 1.1;
+  color: var(--nb-black);
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: -1px;
+  text-shadow: 3px 3px 0px var(--nb-cricket-green);
+}
+
+.nb-subtitle {
+  font-size: var(--nb-text-xl);
+  font-weight: 600;
+  color: var(--nb-gray-600);
+  margin: var(--nb-space-3) 0 0 0;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.nb-heading {
+  font-size: var(--nb-text-3xl);
+  font-weight: 800;
+  line-height: 1.2;
+  color: var(--nb-black);
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: -0.5px;
+}
+
+.nb-text {
+  font-size: var(--nb-text-base);
+  line-height: 1.6;
+  color: var(--nb-gray-700);
+  margin: 0;
+  font-weight: 500;
+}
+
+/* Neo-Brutalist Grid Layouts */
+.nb-grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--nb-space-4);
+}
+
+.nb-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--nb-space-4);
+}
+
+.nb-grid-4 {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--nb-space-4);
+}
+
+/* Neo-Brutalist Stats */
+.nb-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--nb-space-4);
+  margin: var(--nb-space-6) 0;
+}
+
+.nb-stat {
+  text-align: center;
+  padding: var(--nb-space-6);
+  background: var(--nb-white);
+  border: 3px solid var(--nb-black);
+  border-radius: var(--nb-radius-xl);
+  box-shadow: var(--nb-shadow-md);
+}
+
+.nb-stat-value {
+  font-size: var(--nb-text-3xl);
+  font-weight: 900;
+  color: var(--nb-cricket-green);
+  margin: 0 0 var(--nb-space-2) 0;
+  font-family: var(--nb-font-mono);
+}
+
+.nb-stat-label {
+  font-size: var(--nb-text-sm);
+  font-weight: 700;
+  color: var(--nb-black);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin: 0;
+}
+
+/* Neo-Brutalist Runs Display */
+.nb-runs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--nb-space-3);
+  justify-content: center;
+  margin: var(--nb-space-6) 0;
+}
+
+.nb-run {
+  width: 48px;
+  height: 48px;
+  border: 3px solid var(--nb-black);
+  border-radius: var(--nb-radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  font-size: var(--nb-text-lg);
+  color: var(--nb-white);
+  font-family: var(--nb-font-mono);
+  transition: all var(--nb-transition-fast);
+  box-shadow: var(--nb-shadow-sm);
+}
+
+.nb-run:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: var(--nb-shadow-md);
+}
+
+.nb-run.dot {
+  background: var(--nb-gray-400);
+}
+
+.nb-run.single {
+  background: var(--nb-blue);
+}
+
+.nb-run.two {
+  background: var(--nb-cyan);
+}
+
+.nb-run.three {
+  background: var(--nb-purple);
+}
+
+.nb-run.four {
+  background: var(--nb-cricket-green);
+}
+
+.nb-run.five {
+  background: var(--nb-cricket-gold);
+}
+
+.nb-run.six {
+  background: var(--nb-orange);
+}
+
+.nb-run.out {
+  background: var(--nb-red);
+}
+
+/* Neo-Brutalist Animations */
+@keyframes nb-bounce {
+  0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+  40% { transform: translateY(-10px); }
+  60% { transform: translateY(-5px); }
+}
+
+@keyframes nb-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+@keyframes nb-shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+@keyframes nb-glow {
+  0%, 100% { box-shadow: var(--nb-shadow-lg); }
+  50% { box-shadow: var(--nb-shadow-xl), 0 0 20px var(--nb-cricket-green); }
+}
+
+.nb-bounce {
+  animation: nb-bounce 1s ease-in-out;
+}
+
+.nb-pulse {
+  animation: nb-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.nb-shake {
+  animation: nb-shake 0.5s ease-in-out;
+}
+
+.nb-glow {
+  animation: nb-glow 2s ease-in-out infinite;
+}
+
+/* Neo-Brutalist Celebration Messages */
+.nb-celebration {
+  background: var(--nb-cricket-green);
+  border: 4px solid var(--nb-black);
+  border-radius: var(--nb-radius-xl);
+  padding: var(--nb-space-6);
+  margin: var(--nb-space-4) 0;
+  text-align: center;
+  box-shadow: var(--nb-shadow-lg);
+  font-weight: 800;
+  font-size: var(--nb-text-xl);
+  color: var(--nb-black);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  animation: nb-bounce 1s ease-in-out;
+}
+
+.nb-celebration.six {
+  background: var(--nb-orange);
+  color: var(--nb-white);
+  border-color: var(--nb-black);
+}
+
+.nb-celebration.four {
+  background: var(--nb-cricket-green);
+  color: var(--nb-black);
+}
+
+.nb-celebration.out {
+  background: var(--nb-red);
+  color: var(--nb-white);
+  border-color: var(--nb-black);
+}
+
+.nb-celebration.single,
+.nb-celebration.two,
+.nb-celebration.three {
+  background: var(--nb-blue);
+  color: var(--nb-white);
+}
+
+.nb-celebration.dot {
+  background: var(--nb-gray-400);
+  color: var(--nb-black);
+}
+
+/* Neo-Brutalist Navigation Bar */
+.nb-nav-section {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--nb-white);
+  border-top: 4px solid var(--nb-black);
+  padding: var(--nb-space-3) 0;
+  padding-bottom: calc(var(--nb-space-3) + env(safe-area-inset-bottom));
+  z-index: 1000;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  box-shadow: var(--nb-shadow-lg);
+}
+
+/* Desktop Navigation - Top */
+@media (min-width: 769px) {
+  .nb-nav-section {
+    position: fixed;
+    top: 0;
+    bottom: auto;
+    border-top: none;
+    border-bottom: 4px solid var(--nb-black);
+    padding-top: calc(var(--nb-space-3) + env(safe-area-inset-top));
+    padding-bottom: var(--nb-space-3);
+    box-shadow: var(--nb-shadow-lg);
+  }
+}
+
+.nb-nav-buttons {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto;
+  padding: 0 var(--nb-space-4);
+}
+
+/* Desktop Navigation Buttons */
+@media (min-width: 769px) {
+  .nb-nav-buttons {
+    max-width: 600px;
+    padding: 0 var(--nb-space-6);
+  }
+  
+  .nb-nav-button {
+    padding: var(--nb-space-4) var(--nb-space-6);
+    min-width: 80px;
+  }
+  
+  .nb-nav-icon {
+    width: 28px;
+    height: 28px;
+  }
+  
+  .nb-nav-label {
+    font-size: var(--nb-text-sm);
+  }
+}
+
+.nb-nav-button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--nb-space-1);
+  padding: var(--nb-space-3);
+  border: 3px solid var(--nb-black);
+  border-radius: var(--nb-radius-lg);
+  background: var(--nb-white);
+  color: var(--nb-gray-600);
+  cursor: pointer;
+  transition: all var(--nb-transition-fast);
+  min-width: 60px;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: var(--nb-text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: var(--nb-shadow-sm);
+}
+
+.nb-nav-button:hover {
+  background: var(--nb-gray-100);
+  transform: translate(-2px, -2px);
+  box-shadow: var(--nb-shadow-md);
+}
+
+.nb-nav-button.active {
+  background: var(--nb-cricket-green);
+  color: var(--nb-black);
+  border-color: var(--nb-black);
+  box-shadow: var(--nb-shadow-md);
+}
+
+.nb-nav-button:active {
+  transform: translate(0px, 0px);
+  box-shadow: var(--nb-shadow-sm);
+}
+
+.nb-nav-icon {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nb-nav-label {
+  font-size: var(--nb-text-xs);
+  font-weight: 700;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Neo-Brutalist Responsive Design */
+@media (max-width: 768px) {
+  .nb-grid-2,
+  .nb-grid-3,
+  .nb-grid-4 {
+    grid-template-columns: 1fr;
+  }
+  
+  .nb-stats {
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--nb-space-3);
+  }
+  
+  .nb-title {
+    font-size: var(--nb-text-4xl);
+  }
+  
+  .nb-score-main {
+    font-size: var(--nb-text-6xl);
+  }
+  
+  .nb-page-number {
+    font-size: var(--nb-text-6xl);
+  }
+  
+  .nb-card {
+    margin: var(--nb-space-4) 0;
+  }
+  
+  .nb-btn-xl {
+    min-height: 64px;
+    padding: var(--nb-space-4) var(--nb-space-6);
+    font-size: var(--nb-text-lg);
+  }
+}
+
+@media (max-width: 480px) {
+  body {
+    font-size: var(--nb-text-sm);
+  }
+  
+  .nb-title {
+    font-size: var(--nb-text-3xl);
+    line-height: 1.1;
+  }
+  
+  .nb-heading {
+    font-size: var(--nb-text-2xl);
+  }
+  
+  .nb-score-main {
+    font-size: var(--nb-text-5xl);
+  }
+  
+  .nb-page-number {
+    font-size: var(--nb-text-5xl);
+  }
+  
+  .nb-btn {
+    min-height: var(--nb-touch-target);
+    padding: var(--nb-space-3) var(--nb-space-4);
+    font-size: var(--nb-text-sm);
+  }
+  
+  .nb-btn-lg {
+    min-height: 56px;
+    padding: var(--nb-space-3) var(--nb-space-5);
+    font-size: var(--nb-text-base);
+  }
+  
+  .nb-btn-xl {
+    min-height: 60px;
+    padding: var(--nb-space-4) var(--nb-space-6);
+    font-size: var(--nb-text-lg);
+  }
+  
+  .nb-card {
+    border-width: 3px;
+    margin: var(--nb-space-3) 0;
+  }
+  
+  .nb-stats {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--nb-space-2);
+  }
+  
+  .nb-stat {
+    padding: var(--nb-space-4);
+  }
+  
+  .nb-stat-value {
+    font-size: var(--nb-text-2xl);
+  }
+  
+  .nb-stat-label {
+    font-size: var(--nb-text-xs);
+  }
+  
+  .nb-runs {
+    gap: var(--nb-space-2);
+  }
+  
+  .nb-run {
+    width: 40px;
+    height: 40px;
+    font-size: var(--nb-text-base);
+  }
+  
+  /* Mobile-specific padding adjustments */
+  .app {
+    padding-left: var(--nb-space-3);
+    padding-right: var(--nb-space-3);
+  }
+}
+
+@media (max-width: 360px) {
+  .nb-title {
+    font-size: var(--nb-text-2xl);
+  }
+  
+  .nb-score-main {
+    font-size: var(--nb-text-4xl);
+  }
+  
+  .nb-page-number {
+    font-size: var(--nb-text-4xl);
+  }
+  
+  .nb-stats {
+    grid-template-columns: 1fr;
+  }
+  
+  .nb-run {
+    width: 36px;
+    height: 36px;
+    font-size: var(--nb-text-sm);
+  }
+  
+  .nb-nav-button {
+    padding: var(--nb-space-2);
+    min-width: 50px;
+  }
+  
+  .nb-nav-icon {
+    width: 20px;
+    height: 20px;
+  }
+  
+  .nb-nav-label {
+    font-size: 10px;
+  }
+}
+
+/* Focus Styles for Accessibility */
+.nb-btn:focus-visible,
+.nb-card:focus-visible {
+  outline: 4px solid var(--nb-cricket-green);
+  outline-offset: 4px;
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

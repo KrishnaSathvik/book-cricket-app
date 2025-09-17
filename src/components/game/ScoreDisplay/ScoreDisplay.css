@@ -1,0 +1,212 @@
+/* Modern Mobile-First Score Display Component */
+
+.score-display {
+  background: linear-gradient(135deg, var(--primary-500), var(--secondary-500));
+  border-radius: var(--radius-2xl);
+  padding: var(--space-6);
+  color: white;
+  text-align: center;
+  box-shadow: var(--shadow-xl);
+  position: relative;
+  overflow: hidden;
+}
+
+.score-display::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.1) 50%, transparent 70%);
+  animation: shimmer 3s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0%, 100% { transform: translateX(-100%); }
+  50% { transform: translateX(100%); }
+}
+
+/* Main Score Section */
+.score-main {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+.score-primary,
+.score-secondary {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.score-number {
+  font-size: var(--font-5xl);
+  font-weight: 800;
+  line-height: 1;
+  margin-bottom: var(--space-1);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.score-label {
+  font-size: var(--font-sm);
+  font-weight: 600;
+  opacity: 0.9;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.score-divider {
+  font-size: var(--font-4xl);
+  font-weight: 700;
+  opacity: 0.7;
+  margin: 0 var(--space-2);
+}
+
+/* Stats Row */
+.score-stats {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-6);
+  margin-bottom: var(--space-3);
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.stat-value {
+  font-size: var(--font-xl);
+  font-weight: 700;
+  line-height: 1;
+  margin-bottom: var(--space-1);
+}
+
+.stat-label {
+  font-size: var(--font-xs);
+  font-weight: 500;
+  opacity: 0.8;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Game Status */
+.game-status {
+  margin-top: var(--space-3);
+  padding-top: var(--space-3);
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.status-text {
+  font-size: var(--font-lg);
+  font-weight: 600;
+  opacity: 0.9;
+}
+
+/* Responsive Design */
+@media (max-width: 480px) {
+  .score-display {
+    padding: var(--space-4);
+  }
+  
+  .score-main {
+    gap: var(--space-3);
+  }
+  
+  .score-number {
+    font-size: var(--font-4xl);
+  }
+  
+  .score-divider {
+    font-size: var(--font-3xl);
+  }
+  
+  .score-stats {
+    gap: var(--space-4);
+  }
+  
+  .stat-value {
+    font-size: var(--font-lg);
+  }
+}
+
+/* Score Display Variants */
+.score-display.compact {
+  padding: var(--space-4);
+}
+
+.score-display.compact .score-number {
+  font-size: var(--font-3xl);
+}
+
+.score-display.compact .score-stats {
+  gap: var(--space-4);
+}
+
+.score-display.large {
+  padding: var(--space-8);
+}
+
+.score-display.large .score-number {
+  font-size: var(--font-6xl);
+}
+
+.score-display.large .score-stats {
+  gap: var(--space-8);
+}
+
+/* Score Display States */
+.score-display.celebrating {
+  animation: celebrate 0.6s ease-in-out;
+}
+
+@keyframes celebrate {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+.score-display.warning {
+  background: linear-gradient(135deg, var(--warning-500), var(--warning-600));
+}
+
+.score-display.error {
+  background: linear-gradient(135deg, var(--error-500), var(--error-600));
+}
+
+.score-display.success {
+  background: linear-gradient(135deg, var(--success-500), var(--success-600));
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+  .score-display {
+    box-shadow: var(--shadow-2xl);
+  }
+}
+
+/* High Contrast Mode */
+@media (prefers-contrast: high) {
+  .score-display {
+    border: 2px solid white;
+  }
+  
+  .score-number {
+    text-shadow: 0 0 0 white;
+  }
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  .score-display::before {
+    animation: none;
+  }
+  
+  .score-display.celebrating {
+    animation: none;
+  }
+}

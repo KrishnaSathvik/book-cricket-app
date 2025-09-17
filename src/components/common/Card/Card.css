@@ -1,0 +1,274 @@
+/* Modern Mobile-First Card Component - Inspired by Mobbin Patterns */
+
+.card {
+  background: white;
+  border: 1px solid var(--neutral-200);
+  transition: all var(--transition-normal);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Card Variants */
+.card-default {
+  background: white;
+  border: 1px solid var(--neutral-200);
+}
+
+.card-elevated {
+  background: white;
+  border: none;
+  box-shadow: var(--shadow-lg);
+}
+
+.card-outlined {
+  background: transparent;
+  border: 2px solid var(--neutral-300);
+}
+
+.card-filled {
+  background: var(--neutral-50);
+  border: 1px solid var(--neutral-200);
+}
+
+.card-gradient {
+  background: linear-gradient(135deg, var(--primary-50), var(--secondary-50));
+  border: 1px solid var(--primary-200);
+}
+
+/* Card Padding */
+.card-padding-none {
+  padding: 0;
+}
+
+.card-padding-sm {
+  padding: var(--space-3);
+}
+
+.card-padding-md {
+  padding: var(--space-4);
+}
+
+.card-padding-lg {
+  padding: var(--space-6);
+}
+
+.card-padding-xl {
+  padding: var(--space-8);
+}
+
+/* Card Shadows */
+.card-shadow-none {
+  box-shadow: none;
+}
+
+.card-shadow-sm {
+  box-shadow: var(--shadow-sm);
+}
+
+.card-shadow-md {
+  box-shadow: var(--shadow-md);
+}
+
+.card-shadow-lg {
+  box-shadow: var(--shadow-lg);
+}
+
+.card-shadow-xl {
+  box-shadow: var(--shadow-xl);
+}
+
+/* Card Border Radius */
+.card-rounded-none {
+  border-radius: 0;
+}
+
+.card-rounded-sm {
+  border-radius: var(--radius-sm);
+}
+
+.card-rounded-md {
+  border-radius: var(--radius-md);
+}
+
+.card-rounded-lg {
+  border-radius: var(--radius-lg);
+}
+
+.card-rounded-xl {
+  border-radius: var(--radius-xl);
+}
+
+.card-rounded-2xl {
+  border-radius: var(--radius-2xl);
+}
+
+.card-rounded-3xl {
+  border-radius: var(--radius-3xl);
+}
+
+/* Clickable Card */
+.card-clickable {
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.card-clickable:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-xl);
+}
+
+.card-clickable:active {
+  transform: translateY(0);
+  transition: transform var(--transition-fast);
+}
+
+/* Card Sub-components */
+.card-header {
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--neutral-200);
+  margin-bottom: var(--space-4);
+}
+
+.card-body {
+  flex: 1;
+}
+
+.card-footer {
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--neutral-200);
+  margin-top: var(--space-4);
+}
+
+.card-title {
+  font-size: var(--font-xl);
+  font-weight: 700;
+  color: var(--neutral-900);
+  margin: 0 0 var(--space-2) 0;
+  line-height: 1.3;
+}
+
+.card-subtitle {
+  font-size: var(--font-sm);
+  color: var(--neutral-600);
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* Card States */
+.card:focus-visible {
+  outline: 2px solid var(--primary-500);
+  outline-offset: 2px;
+}
+
+/* Card Animations */
+.card {
+  animation: fadeIn var(--transition-normal) ease-out;
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+  .card-default {
+    background: var(--neutral-800);
+    border-color: var(--neutral-700);
+  }
+  
+  .card-elevated {
+    background: var(--neutral-800);
+  }
+  
+  .card-outlined {
+    background: transparent;
+    border-color: var(--neutral-600);
+  }
+  
+  .card-filled {
+    background: var(--neutral-900);
+    border-color: var(--neutral-700);
+  }
+  
+  .card-gradient {
+    background: linear-gradient(135deg, var(--primary-900), var(--secondary-900));
+    border-color: var(--primary-700);
+  }
+  
+  .card-header {
+    border-color: var(--neutral-700);
+  }
+  
+  .card-footer {
+    border-color: var(--neutral-700);
+  }
+  
+  .card-title {
+    color: var(--neutral-100);
+  }
+  
+  .card-subtitle {
+    color: var(--neutral-400);
+  }
+}
+
+/* Responsive Adjustments */
+@media (max-width: 480px) {
+  .card-padding-lg {
+    padding: var(--space-4);
+  }
+  
+  .card-padding-xl {
+    padding: var(--space-5);
+  }
+  
+  .card-title {
+    font-size: var(--font-lg);
+  }
+  
+  .card-subtitle {
+    font-size: var(--font-xs);
+  }
+}
+
+/* Special Card Types for Gaming */
+.card-score {
+  background: linear-gradient(135deg, var(--primary-500), var(--secondary-500));
+  color: white;
+  border: none;
+  text-align: center;
+}
+
+.card-score .card-title {
+  color: white;
+  font-size: var(--font-4xl);
+  font-weight: 800;
+}
+
+.card-score .card-subtitle {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.card-achievement {
+  background: linear-gradient(135deg, var(--warning-100), var(--warning-50));
+  border: 2px solid var(--warning-300);
+}
+
+.card-achievement .card-title {
+  color: var(--warning-800);
+}
+
+.card-stat {
+  background: linear-gradient(135deg, var(--success-100), var(--success-50));
+  border: 2px solid var(--success-300);
+}
+
+.card-stat .card-title {
+  color: var(--success-800);
+}
+
+.card-error {
+  background: linear-gradient(135deg, var(--error-100), var(--error-50));
+  border: 2px solid var(--error-300);
+}
+
+.card-error .card-title {
+  color: var(--error-800);
+}
